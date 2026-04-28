@@ -1,0 +1,23 @@
+server:
+  port: 8080
+
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver  # MySQL8 驱动（必须带 cj）
+    url: jdbc:mysql://192.168.0.200:3306/bugucloud?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    hikari:   # 自带HikariCP连接池配置
+      maximum-pool-size: 10  # 最大连接数
+      minimum-idle: 5       # 最小空闲连接
+      idle-timeout: 30000   # 空闲超时时间
+
+
+knife4j:
+  enable: true               # 开启增强功能
+  production: false          # 生产环境设为 true（关闭文档）
+  setting:
+    language: zh-CN          # 中文界面
+springdoc:
+  api-docs:
+    enabled: true            # 开启 OpenAPI 文档生成

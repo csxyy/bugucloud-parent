@@ -1,0 +1,19 @@
+server:
+  port: 8080
+
+#spring:
+#  datasource:
+#    url: jdbc:mysql://xxx:3306/bugucloud?useUnicode=true&characterEncoding=utf8&useSSL=true&serverTimezone=Asia/Shanghai
+#    username: xxx
+#    password: xxx
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+
+
+# 生产关闭文档
+knife4j:
+  enable: false              # 总开关关闭
+  production: true           # 标记生产环境
+springdoc:
+  api-docs:
+    enabled: false           # 彻底关闭 /v3/api-docs 接口
+# 效果：/doc.html、/swagger-ui.html、/v3/api-docs 全部 404 或无响应。

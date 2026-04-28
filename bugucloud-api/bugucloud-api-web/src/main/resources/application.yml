@@ -1,0 +1,23 @@
+spring:
+  application:
+    name: bugucloud-api-web
+  profiles:
+    active: dev  # 可通过启动参数覆盖
+
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true  # 开启下划线转驼峰（生产必备）
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 打印SQL（开发用，生产关闭）
+#  global-config:
+#    db-config:
+#      id-type: auto  # 主键自增（根据业务修改）
+#      logic-delete-field: is_deleted  # 逻辑删除字段名
+#      logic-delete-value: 1  # 已删除
+#      logic-not-delete-value: 0  # 未删除
+
+# 修改控制台日志输出格式
+logging:
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss}){faint} %clr(%-5level){green} %clr(${PID}){magenta} %clr([%thread]){teal} %clr(%logger{36}){cyan}: %msg%n"
