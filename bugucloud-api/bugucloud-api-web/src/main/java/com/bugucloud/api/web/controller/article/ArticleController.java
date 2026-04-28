@@ -1,16 +1,17 @@
 package com.bugucloud.api.web.controller.article;
 
-import com.bugucloud.api.web.controller.article.req.ArticleCreateReq;
-import com.bugucloud.api.web.controller.article.vo.ArticleDetailVO;
-import com.bugucloud.api.web.controller.article.vo.ArticleManageVO;
-import com.bugucloud.api.web.controller.article.vo.CategoryVO;
+import com.bugucloud.service.req.ArticleCreateReq;
 import com.bugucloud.common.result.Result;
+import com.bugucloud.core.dto.ArticleDetailDTO;
+import com.bugucloud.core.dto.ArticleItemDTO;
+import com.bugucloud.core.dto.ArticleManageDTO;
+import com.bugucloud.service.article.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -24,25 +25,42 @@ import java.util.List;
 @RestController
 @RequestMapping("/article")
 @Tag(name = "文章信息管理")
+@AllArgsConstructor
 public class ArticleController {
 
+    private final ArticleService articleService;
+
     @Operation(summary = "根据文章ID查询文章详情")
-    @GetMapping("/articles/{articleId}")
-    public Result<ArticleDetailVO> getArticleDetail(
+    @GetMapping("/detail/{articleId}")
+    public Result<ArticleDetailDTO> getArticleDetail(
             @Parameter(description = "文章ID") @PathVariable Long articleId) {
-        return Result.ok();
+        Long userId = null;
+        ArticleDetailDTO articleDetailDTO = articleService.getArticleDetailById(articleId, userId);
+        return Result.ok(articleDetailDTO);
+    }
+
+    @Operation(summary = "根据标签ID查询文章列表")
+    @GetMapping("/list")
+    public Result<List<ArticleItemDTO>> getArticleListByTagId(
+            @Parameter(description = "标签ID", allowEmptyValue = true) @RequestParam(required = false) Long tagId) {
+        List<ArticleItemDTO> list = articleService.getArticleListByTagId(tagId);
+        return Result.ok(list);
     }
 
     @Operation(summary = "查询文章管理列表")
-    @GetMapping("/articles")
-    public Result<List<ArticleManageVO>> listArticles() {
-        return Result.ok();
+    @GetMapping("/manage")
+    public Result<List<ArticleManageDTO>> getArticleManageList() {
+        Long userId = 1002L;
+        List<ArticleManageDTO> list = articleService.getArticleManageListByUserId(userId);
+        return Result.ok(list);
     }
 
-    @Operation(summary = "发布文章")
-    @PostMapping("/articles")
-    public Result<Void> createArticle(@Valid @RequestBody ArticleCreateReq request) {
-
+    @Operation(summary = "新增文章")
+    @PostMapping("/create")
+    public Result<Void> createArticle(@RequestBody @Valid ArticleCreateReq request) {
+        Long userId = 1002L;
+        Long article = articleService.createArticle(request, userId);
+        System.out.println(article);
         return Result.ok();
     }
 }

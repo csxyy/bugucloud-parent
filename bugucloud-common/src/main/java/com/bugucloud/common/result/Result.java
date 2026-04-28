@@ -46,6 +46,10 @@ public class Result<T> implements Serializable {
         return build(null, resultCodeEnum);
     }
 
+    public static <T> Result<T> error(Integer code, String meg) {
+        return build(code, meg);
+    }
+
     // ==================== 业务失败（校验失败、参数错误、业务不通过） ====================
     public static <T> Result<T> fail() {
         return build(null, ResultCodeEnum.BUSINESS_FAIL);
@@ -67,6 +71,13 @@ public class Result<T> implements Serializable {
         result.setCode(resultCodeEnum.getCode());
         result.setMessage(resultCodeEnum.getMessage());
         result.setData(data);
+        return result;
+    }
+
+    private static <T> Result<T> build(Integer code, String msg) {
+        Result<T> result = new Result<>();
+        result.setCode(code);
+        result.setMessage(msg);
         return result;
     }
 }

@@ -25,9 +25,9 @@ public class Article extends BaseEntity {
     @TableField(value = "title")
     private String title;
 
-    @Schema(description = "文章副标题")
-    @TableField(value = "subtitle")
-    private String subtitle;
+    @Schema(description = "文章摘要")
+    @TableField(value = "summary")
+    private String summary;
 
     @Schema(description = "文章封面图URL")
     @TableField(value = "cover")
@@ -61,9 +61,9 @@ public class Article extends BaseEntity {
     @TableField(value = "is_published")
     private Integer isPublished;
 
-    @Schema(description = "内容状态 0-待审核 1-审核通过 2-违规拉黑")
-    @TableField(value = "status")
-    private Integer status;
+    @Schema(description = "审核状态 0-审核中 1-审核通过 2-审核驳回")
+    @TableField(value = "audit_status")
+    private Integer auditStatus;
 
     @Schema(description = "排序号，越大越靠前")
     @TableField(value = "sort")
