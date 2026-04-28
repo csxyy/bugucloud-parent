@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.3.4</version>
+        <relativePath/> <!-- 去本地仓库找父工程，不要找本地文件！ -->
+    </parent>
+
+    <groupId>com.bugucloud</groupId>
+    <artifactId>bugucloud-parent</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+    <name>bugucloud-parent</name>
+    <description>布谷云-顶级父工程：统一依赖版本管理</description>
+
+    <modules>
+        <module>bugucloud-common</module>
+        <module>bugucloud-core</module>
+        <module>bugucloud-service</module>
+        <module>bugucloud-api</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <mybatis-plus.version>3.5.15</mybatis-plus.version>
+        <knife4j.version>4.5.0</knife4j.version>
+        <lombok.version>1.18.34</lombok.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <!--mybatis-plus-->
+            <!--官方文档：https://baomidou.com/pages/bab2db/ -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+            <!-- mybatis-plus 分页插件的核心依赖 -->
+            <dependency>
+                <groupId>com.baomidou</groupId>
+                <artifactId>mybatis-plus-jsqlparser</artifactId>
+                <!-- 版本号与上面严格一致！-->
+                <version>${mybatis-plus.version}</version>
+            </dependency>
+
+            <!--knife4j文档-->
+            <!--官方文档：https://doc.xiaominfo.com/docs/quick-start -->
+            <dependency>
+                <groupId>com.github.xiaoymin</groupId>
+                <artifactId>knife4j-openapi3-jakarta-spring-boot-starter</artifactId>
+                <version>${knife4j.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope> <!-- 编译时生效，不打入 jar（瘦身、避免冲突） -->
+                <optional>true</optional> <!-- 不传递依赖（防止子项目污染） -->
+            </dependency>
+
+
+            <!-- ====================== 在这里加入内部二方库 ====================== -->
+            <dependency>
+                <groupId>com.bugucloud</groupId>
+                <artifactId>bugucloud-common</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bugucloud</groupId>
+                <artifactId>bugucloud-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bugucloud</groupId>
+                <artifactId>bugucloud-service</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.bugucloud</groupId>
+                <artifactId>bugucloud-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+</project>
