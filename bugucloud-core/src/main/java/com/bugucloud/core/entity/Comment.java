@@ -26,8 +26,8 @@ public class Comment extends BaseEntity {
     private Long userId;
 
     @Schema(description = "冗余：评论时的用户名")
-    @TableField(value = "username")
-    private String username;
+    @TableField(value = "nickname")
+    private String nickname;
 
     @Schema(description = "冗余：评论时的头像")
     @TableField(value = "avatar")
@@ -42,8 +42,8 @@ public class Comment extends BaseEntity {
     private Long replyUserId;
 
     @Schema(description = "冗余：被回复用户名")
-    @TableField(value = "reply_username")
-    private String replyUsername;
+    @TableField(value = "reply_nickname")
+    private String replyNickname;
 
     @Schema(description = "评论内容")
     @TableField(value = "content")
