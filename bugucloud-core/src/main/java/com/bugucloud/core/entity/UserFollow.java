@@ -17,23 +17,15 @@ import lombok.Data;
 @Schema(description = "用户关注关系表")
 public class UserFollow extends BaseEntity {
 
-    @Schema(description = "关注者ID(主动关注的人)")
+    @Schema(description = "关注者ID（主动关注的人，即粉丝）")
     @TableField(value = "user_id")
     private Long userId;
 
-    @Schema(description = "被关注者ID")
+    @Schema(description = "被关注者ID（即博主）")
     @TableField(value = "followed_user_id")
     private Long followedUserId;
 
-    @Schema(description = "冗余：被关注者昵称")
-    @TableField(value = "followed_nickname")
-    private String followedNickname;
-
-    @Schema(description = "冗余：被关注者头像")
-    @TableField(value = "followed_avatar")
-    private String followedAvatar;
-
-    @Schema(description = "关注来源 1=博客 2=主页")
+    @Schema(description = "关注来源 1=博客 2=主页 3=粉丝列表")
     @TableField(value = "follow_source")
     private Integer followSource;
 

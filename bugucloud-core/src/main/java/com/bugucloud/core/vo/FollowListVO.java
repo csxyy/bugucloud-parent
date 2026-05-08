@@ -1,6 +1,7 @@
-package com.bugucloud.api.web.controller.follow.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 /**
@@ -16,12 +17,15 @@ public class FollowListVO {
     /** 用户ID */
     private Long userId;
 
+    /** 用户头像URL */
+    private String avatar;
+
     /** 用户昵称 */
     private String nickname;
 
     /** 关注时间 */
     private LocalDateTime followTime;
 
-    /** 对方是否关注我 */
+    /** 对方是否关注我（或者我是否关注对方） */
     private Boolean isMutualFollow;
 }

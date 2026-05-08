@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bugucloud.core.mapper.UserFollowMapper">
+
+    <!-- 查询我的关注列表 -->
+    <select id="selectMyFollowing" resultType="com.bugucloud.core.vo.FollowListVO">
+        SELECT
+        u.id AS userId,
+        u.avatar,
+        u.nickname,
+        f1.create_time AS followTime,
+        <!-- 判断对方是否也关注了我（互关） -->
+        CASE WHEN f2.user_id IS NOT NULL AND f2.is_cancel = 0
+        THEN 1 ELSE 0 END AS isMutualFollow
+        FROM t_user_follow f1
+        INNER JOIN t_user u ON f1.followed_user_id = u.id
+        <!-- 查询对方是否关注了我 -->
+        LEFT JOIN t_user_follow f2
+        ON f1.followed_user_id = f2.user_id
+        AND f2.followed_user_id = #{userId}
+        AND f2.is_cancel = 0
+        WHERE f1.user_id = #{userId}
+        AND f1.is_cancel = 0
+        AND u.status = 1
+        ORDER BY f1.create_time DESC
+    </select>
+
+    <!-- 查询我的粉丝列表 -->
+    <select id="selectMyFollowers" resultType="com.bugucloud.core.vo.FollowListVO">
+        SELECT
+        u.id AS userId,
+        u.avatar,
+        u.nickname,
+        f1.create_time AS followTime,
+        <!-- 判断我是否也关注了对方 -->
+        CASE WHEN f2.user_id IS NOT NULL AND f2.is_cancel = 0
+        THEN 1 ELSE 0 END AS isMutualFollow
+        FROM t_user_follow f1
+        INNER JOIN t_user u ON f1.user_id = u.id
+        <!-- 查询我是否关注了对方 -->
+        LEFT JOIN t_user_follow f2
+        ON f1.user_id = f2.followed_user_id
+        AND f2.user_id = #{userId}
+        AND f2.is_cancel = 0
+        WHERE f1.followed_user_id = #{userId}
+        AND f1.is_cancel = 0
+        AND u.status = 1
+        ORDER BY f1.create_time DESC
+    </select>
+
+</mapper>
