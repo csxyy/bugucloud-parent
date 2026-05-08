@@ -3,11 +3,12 @@ package com.bugucloud.service.article.impl;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
-import com.bugucloud.core.dto.ArticleDetailDTO;
-import com.bugucloud.core.dto.ArticleManageDTO;
 import com.bugucloud.core.entity.Article;
 import com.bugucloud.core.entity.ArticleTag;
 import com.bugucloud.core.mapper.ArticleMapper;
+import com.bugucloud.core.vo.ArticleDetailVO;
+import com.bugucloud.core.vo.ArticleItemVO;
+import com.bugucloud.core.vo.ArticleManageVO;
 import com.bugucloud.service.article.ArticleService;
 import com.bugucloud.service.req.ArticleCreateReq;
 import lombok.RequiredArgsConstructor;
@@ -33,9 +34,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final ArticleMapper articleMapper;
 
     @Override
-    public ArticleDetailDTO getArticleDetailById(Long articleId, Long currentUserId) {
+    public ArticleDetailVO getArticleDetailById(Long articleId, Long currentUserId) {
         // 查询文章详情
-        ArticleDetailDTO detail = articleMapper.selectArticleDetailById(articleId, currentUserId);
+        ArticleDetailVO detail = articleMapper.selectArticleDetailById(articleId, currentUserId);
 
         if (detail == null) {
             throw new BusinessException("文章不存在或未发布");
@@ -53,12 +54,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public List<com.bugucloud.core.dto.ArticleItemVO> getArticleListByTagId(Long tagId) {
+    public List<ArticleItemVO> getArticleListByTagId(Long tagId) {
         return articleMapper.selectArticleListByTagId(tagId);
     }
 
     @Override
-    public List<ArticleManageDTO> getArticleManageListByUserId(Long userId) {
+    public List<ArticleManageVO> getArticleManageListByUserId(Long userId) {
         return articleMapper.selectArticleManageListByUserId(userId);
     }
 
