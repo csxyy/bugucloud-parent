@@ -1,17 +1,16 @@
-package com.bugucloud.api.web.controller.article.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
 
 /**
- * 功能描述: 标签VO
+ * 功能描述: 标签DTO
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/27 - 9:43
+ * @date 2026/4/28 - 14:44
  */
 @Data
 public class TagVO {
-
     /** 标签ID */
     private Long id;
 

@@ -1,17 +1,18 @@
-package com.bugucloud.api.web.controller.comment.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 /**
- * 功能描述: 评论列表项VO
+ * 功能描述: 管理后台-查询我的评论列表
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/28 - 9:55
+ * @date 2026/4/28 - 22:22
  */
 @Data
-public class CommentItemVO {
+public class MyCommentVO {
 
     /** 用户ID */
     private Long userId;

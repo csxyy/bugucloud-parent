@@ -1,17 +1,16 @@
-package com.bugucloud.api.web.controller.article.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
 
 /**
- * 功能描述: 作者的其他文章VO（只展示标题等核心信息）
+ * 功能描述: 作者的其他文章DTO（只展示标题等核心信息）
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/27 - 9:44
+ * @date 2026/4/28 - 14:45
  */
 @Data
 public class AuthorOtherArticleVO {
-
     /** 文章ID */
     private Long id;
 

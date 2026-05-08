@@ -1,18 +1,18 @@
-package com.bugucloud.api.web.controller.article.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 /**
- * 功能描述: 文章管理列表VO
+ * 功能描述: 文章管理查询
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/28 - 9:54
+ * @date 2026/4/28 - 16:00
  */
 @Data
 public class ArticleManageVO {
-
     /** 文章ID */
     private Long articleId;
 

@@ -1,19 +1,19 @@
-package com.bugucloud.api.web.controller.article.vo;
+package com.bugucloud.core.vo;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 功能描述: 文章详情VO
+ * 功能描述: 文章详情DTO
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/27 - 9:37
+ * @date 2026/4/28 - 14:43
  */
 @Data
 public class ArticleDetailVO {
-
     /** 文章ID */
     private Long id;
 
@@ -24,6 +24,7 @@ public class ArticleDetailVO {
     private String content;
 
     /** 发布时间 */
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private LocalDateTime createTime;
 
     /** 阅读数 */

@@ -1,6 +1,6 @@
 package com.bugucloud.api.web.controller.user.vo;
 
-import com.bugucloud.api.web.controller.article.vo.TagVO;
+import com.bugucloud.core.dto.TagDTO;
 import lombok.Data;
 import java.util.List;
 
@@ -31,7 +31,7 @@ public class UserSettingVO {
     private String email;
 
     /** 标签 */
-    private List<TagVO> tags;
+    private List<TagDTO> tags;
 
     /** 个人简介 */
     private String personalIntro;
