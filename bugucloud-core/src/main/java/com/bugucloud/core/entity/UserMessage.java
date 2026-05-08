@@ -52,4 +52,8 @@ public class UserMessage extends BaseEntity {
     @Schema(description = "是否已读 0=未读 1=已读")
     @TableField(value = "is_read")
     private Integer isRead;
+
+    @Schema(description = "是否开启邮箱通知 0=关闭 1=开启")
+    @TableField(value = "email_notify")
+    private Integer emailNotify;
 }
