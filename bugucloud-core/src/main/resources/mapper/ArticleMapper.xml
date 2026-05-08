@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bugucloud.core.mapper.ArticleMapper">
+    <!-- 文章详情结果映射 -->
+    <resultMap id="ArticleDetailMap" type="com.bugucloud.core.vo.ArticleDetailVO">
+        <id property="id" column="article_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="createTime" column="create_time"/>
+        <result property="views" column="views"/>
+        <result property="likes" column="likes"/>
+        <result property="collects" column="collects"/>
+        <result property="isLiked" column="is_liked"/>
+        <result property="isCollected" column="is_collected"/>
+        <result property="isFollowed" column="is_followed"/>
+
+        <!-- 作者信息映射 -->
+        <association property="author" javaType="com.bugucloud.core.vo.ArticleAuthorVO">
+            <id property="id" column="author_id"/>
+            <result property="nickname" column="nickname"/>
+            <result property="avatar" column="avatar"/>
+            <result property="personalIntro" column="personal_intro"/>
+            <result property="role" column="role"/>
+            <result property="totalArticles" column="total_articles"/>
+            <result property="totalLikes" column="total_likes"/>
+            <result property="totalCollects" column="total_collects"/>
+            <result property="followerCount" column="follower_count"/>
+            <!-- otherArticles 通过子查询填充 -->
+            <collection property="otherArticles"
+                        ofType="com.bugucloud.core.vo.AuthorOtherArticleVO"
+                        column="{userId=author_id, excludeArticleId=article_id}"
+                        select="selectAuthorOtherArticles"/>
+        </association>
+
+        <!-- 标签列表映射 -->
+        <collection property="tags" ofType="com.bugucloud.core.vo.TagVO">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+
+    <!-- 查询文章详情 -->
+    <select id="selectArticleDetailById" resultMap="ArticleDetailMap">
+        SELECT
+            a.id AS article_id,
+            a.title,
+            a.content,
+            a.create_time,
+            a.views,
+            a.likes,
+            a.collects,
+
+            -- 作者信息
+            u.id AS author_id,
+            u.nickname,
+            u.avatar,
+            u.personal_intro,
+            u.role,
+
+            -- 作者统计数据
+            us.total_articles,
+            us.total_likes,
+            us.total_collects,
+            us.follower_count,
+
+            -- 标签信息
+            t.id AS tag_id,
+            t.name AS tag_name,
+
+            -- 当前用户是否点赞（未登录或未点赞返回0）
+            CASE WHEN alc_like.id IS NOT NULL AND alc_like.is_cancel = 0
+                     THEN 1 ELSE 0 END AS is_liked,
+
+            -- 当前用户是否收藏（未登录或未收藏返回0）
+            CASE WHEN alc_collect.id IS NOT NULL AND alc_collect.is_cancel = 0
+                     THEN 1 ELSE 0 END AS is_collected,
+
+            -- 当前用户是否关注作者（未登录或未关注返回0）
+            CASE WHEN uf.id IS NOT NULL AND uf.is_cancel = 0
+                     THEN 1 ELSE 0 END AS is_followed
+
+        FROM t_article a
+
+                 -- 关联作者信息
+                 INNER JOIN `t_user` u ON a.user_id = u.id
+
+            -- 关联作者统计信息
+                 LEFT JOIN t_user_stat us ON u.id = us.user_id
+
+            -- 关联标签信息
+                 LEFT JOIN t_article_tag atg ON a.id = atg.article_id
+                 LEFT JOIN t_tag t ON atg.tag_id = t.id
+
+            -- 查询当前用户是否点赞该文章
+                 LEFT JOIN t_article_like_collect alc_like
+                           ON a.id = alc_like.article_id
+                               AND alc_like.user_id = #{currentUserId}
+                               AND alc_like.msg_type = 1
+                               AND alc_like.is_cancel = 0
+
+            -- 查询当前用户是否收藏该文章
+                 LEFT JOIN t_article_like_collect alc_collect
+                           ON a.id = alc_collect.article_id
+                               AND alc_collect.user_id = #{currentUserId}
+                               AND alc_collect.msg_type = 2
+                               AND alc_collect.is_cancel = 0
+
+            -- 查询当前用户是否关注作者
+                 LEFT JOIN t_user_follow uf
+                           ON a.user_id = uf.followed_user_id
+                               AND uf.user_id = #{currentUserId}
+                               AND uf.is_cancel = 0
+
+        WHERE a.id = #{articleId}
+          AND a.is_published = 1
+          AND a.audit_status = 1
+    </select>
+
+    <!-- 查询作者的其他文章（排除当前文章，按创建时间倒序，取前5篇） -->
+    <select id="selectAuthorOtherArticles"
+            resultType="com.bugucloud.core.vo.AuthorOtherArticleVO">
+        SELECT
+            id,
+            title
+        FROM t_article
+        WHERE user_id = #{userId}
+          AND id != #{excludeArticleId}
+          AND is_published = 1
+          AND audit_status = 1
+        ORDER BY create_time DESC
+            LIMIT 5
+    </select>
+
+    <!-- 根据标签ID查询文章列表 -->
+    <select id="selectArticleListByTagId" resultType="com.bugucloud.core.vo.ArticleItemVO">
+        SELECT
+        u.id AS userId,
+        u.avatar,
+        u.nickname,
+        a.id AS articleId,
+        a.title,
+        a.summary,
+        a.cover,
+        a.views,
+        a.likes,
+        a.collects
+        FROM t_article a
+        INNER JOIN `t_user` u ON a.user_id = u.id
+
+        <!-- 如果传了tagId，则关联标签表进行过滤 -->
+        <if test="tagId != null">
+            INNER JOIN t_article_tag atg ON a.id = atg.article_id AND atg.tag_id = #{tagId}
+        </if>
+
+        WHERE a.is_published = 1
+        AND a.audit_status = 1
+        AND u.status = 1
+
+        <!-- 按排序号和创建时间倒序 -->
+        ORDER BY a.sort DESC, a.create_time DESC
+    </select>
+
+    <!-- 根据用户ID查询文章管理列表 -->
+    <select id="selectArticleManageListByUserId" resultType="com.bugucloud.core.vo.ArticleManageVO">
+        SELECT
+            a.id AS articleId,
+            a.title,
+            a.summary,
+            a.create_time AS createTime,
+            a.audit_status AS auditStatus,
+            a.is_published AS isPublished,
+            a.views,
+            a.likes,
+            a.comments,
+            a.collects
+        FROM t_article a
+        WHERE a.user_id = #{userId}
+        ORDER BY a.create_time DESC
+    </select>
+
+    <!-- 插入文章记录 -->
+    <insert id="insertArticle" parameterType="com.bugucloud.core.entity.Article"  useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO t_article (
+            id,
+            user_id,
+            title,
+            summary,
+            cover,
+            content,
+            is_published,
+            audit_status,
+            sort,
+            create_time,
+            update_time
+        ) VALUES (
+             #{id},
+             #{userId},
+             #{title},
+             #{summary},
+             #{cover},
+             #{content},
+             #{isPublished},
+             #{auditStatus},
+             #{sort},
+             NOW(),
+             NOW()
+         )
+    </insert>
+
+    <!-- 批量插入文章标签关联 -->
+    <insert id="batchInsertArticleTags">
+        INSERT INTO t_article_tag (
+        id,
+        article_id,
+        tag_id,
+        create_time,
+        update_time
+        ) VALUES
+        <foreach collection="articleTags" item="item" separator=",">
+            (
+            #{item.id},
+            #{item.articleId},
+            #{item.tagId},
+            NOW(),
+            NOW()
+            )
+        </foreach>
+    </insert>
+</mapper>

@@ -1,21 +1,16 @@
 package com.bugucloud.service.article.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.dto.ArticleDetailDTO;
-import com.bugucloud.core.dto.ArticleItemDTO;
 import com.bugucloud.core.dto.ArticleManageDTO;
 import com.bugucloud.core.entity.Article;
 import com.bugucloud.core.entity.ArticleTag;
-import com.bugucloud.core.entity.UserStat;
 import com.bugucloud.core.mapper.ArticleMapper;
-import com.bugucloud.core.mapper.UserStatMapper;
 import com.bugucloud.service.article.ArticleService;
 import com.bugucloud.service.req.ArticleCreateReq;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,8 +26,8 @@ import java.util.stream.Collectors;
  * @date 2026/4/16
  */
 @Slf4j
-@AllArgsConstructor
 @Service
+@RequiredArgsConstructor
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> implements ArticleService {
 
     private final ArticleMapper articleMapper;
@@ -58,7 +53,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     }
 
     @Override
-    public List<ArticleItemDTO> getArticleListByTagId(Long tagId) {
+    public List<com.bugucloud.core.dto.ArticleItemVO> getArticleListByTagId(Long tagId) {
         return articleMapper.selectArticleListByTagId(tagId);
     }
 

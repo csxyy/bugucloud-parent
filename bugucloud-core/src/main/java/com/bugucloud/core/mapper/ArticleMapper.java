@@ -1,12 +1,12 @@
 package com.bugucloud.core.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.bugucloud.core.dto.ArticleDetailDTO;
-import com.bugucloud.core.dto.ArticleItemDTO;
-import com.bugucloud.core.dto.ArticleManageDTO;
-import com.bugucloud.core.dto.AuthorOtherArticleDTO;
 import com.bugucloud.core.entity.Article;
 import com.bugucloud.core.entity.ArticleTag;
+import com.bugucloud.core.vo.ArticleDetailVO;
+import com.bugucloud.core.vo.ArticleItemVO;
+import com.bugucloud.core.vo.ArticleManageVO;
+import com.bugucloud.core.vo.AuthorOtherArticleVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -22,24 +22,24 @@ public interface ArticleMapper extends BaseMapper<Article> {
     /**
      * 根据文章ID查询文章详情（包含作者信息、标签等）
      */
-    ArticleDetailDTO selectArticleDetailById(@Param("articleId") Long articleId,
-                                             @Param("currentUserId") Long currentUserId);
+    ArticleDetailVO selectArticleDetailById(@Param("articleId") Long articleId,
+                                            @Param("currentUserId") Long currentUserId);
 
     /**
      * 查询作者的其他文章（最新5篇）
      */
-    List<AuthorOtherArticleDTO> selectAuthorOtherArticles(@Param("userId") Long userId,
-                                                          @Param("excludeArticleId") Long excludeArticleId);
+    List<AuthorOtherArticleVO> selectAuthorOtherArticles(@Param("userId") Long userId,
+                                                         @Param("excludeArticleId") Long excludeArticleId);
 
     /**
      * 根据标签ID查询文章列表（tagId为null时查询全部）
      */
-    List<ArticleItemDTO> selectArticleListByTagId(@Param("tagId") Long tagId);
+    List<ArticleItemVO> selectArticleListByTagId(@Param("tagId") Long tagId);
 
     /**
      * 根据用户ID查询文章管理列表（包含所有状态的文章）
      */
-    List<ArticleManageDTO> selectArticleManageListByUserId(@Param("userId") Long userId);
+    List<ArticleManageVO> selectArticleManageListByUserId(@Param("userId") Long userId);
 
     /**
      * 插入文章记录

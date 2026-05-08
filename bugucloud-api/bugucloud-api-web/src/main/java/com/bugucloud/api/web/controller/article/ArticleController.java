@@ -1,16 +1,16 @@
 package com.bugucloud.api.web.controller.article;
 
+import com.bugucloud.core.vo.ArticleDetailVO;
+import com.bugucloud.core.vo.ArticleItemVO;
+import com.bugucloud.core.vo.ArticleManageVO;
 import com.bugucloud.service.req.ArticleCreateReq;
 import com.bugucloud.common.result.Result;
-import com.bugucloud.core.dto.ArticleDetailDTO;
-import com.bugucloud.core.dto.ArticleItemDTO;
-import com.bugucloud.core.dto.ArticleManageDTO;
 import com.bugucloud.service.article.ArticleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -25,33 +25,34 @@ import java.util.List;
 @RestController
 @RequestMapping("/article")
 @Tag(name = "文章信息管理")
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class ArticleController {
 
     private final ArticleService articleService;
 
     @Operation(summary = "根据文章ID查询文章详情")
     @GetMapping("/detail/{articleId}")
-    public Result<ArticleDetailDTO> getArticleDetail(
+    public Result<ArticleDetailVO> getArticleDetail(
             @Parameter(description = "文章ID") @PathVariable Long articleId) {
         Long userId = null;
-        ArticleDetailDTO articleDetailDTO = articleService.getArticleDetailById(articleId, userId);
+        ArticleDetailVO articleDetailDTO = articleService.getArticleDetailById(articleId, userId);
         return Result.ok(articleDetailDTO);
     }
 
     @Operation(summary = "根据标签ID查询文章列表")
     @GetMapping("/list")
-    public Result<List<ArticleItemDTO>> getArticleListByTagId(
-            @Parameter(description = "标签ID", allowEmptyValue = true) @RequestParam(required = false) Long tagId) {
-        List<ArticleItemDTO> list = articleService.getArticleListByTagId(tagId);
+    public Result<List<ArticleItemVO>> getArticleListByTagId(
+            @Parameter(description = "标签ID", allowEmptyValue = true)
+            @RequestParam(required = false) Long tagId) {
+        List<ArticleItemVO> list = articleService.getArticleListByTagId(tagId);
         return Result.ok(list);
     }
 
     @Operation(summary = "查询文章管理列表")
     @GetMapping("/manage")
-    public Result<List<ArticleManageDTO>> getArticleManageList() {
+    public Result<List<ArticleManageVO>> getArticleManageList() {
         Long userId = 1002L;
-        List<ArticleManageDTO> list = articleService.getArticleManageListByUserId(userId);
+        List<ArticleManageVO> list = articleService.getArticleManageListByUserId(userId);
         return Result.ok(list);
     }
 
