@@ -47,7 +47,7 @@ public class Result<T> implements Serializable {
     }
 
     public static <T> Result<T> error(Integer code, String meg) {
-        return build(code, meg);
+        return build(code, meg, null);
     }
 
     // ==================== 业务失败（校验失败、参数错误、业务不通过） ====================
@@ -74,10 +74,11 @@ public class Result<T> implements Serializable {
         return result;
     }
 
-    private static <T> Result<T> build(Integer code, String msg) {
+    private static <T> Result<T> build(Integer code, String msg, T data) {
         Result<T> result = new Result<>();
         result.setCode(code);
         result.setMessage(msg);
+        result.setData(data);
         return result;
     }
 }

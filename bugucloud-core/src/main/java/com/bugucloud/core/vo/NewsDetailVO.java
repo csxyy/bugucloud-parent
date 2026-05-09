@@ -1,6 +1,7 @@
-package com.bugucloud.api.web.controller.news.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
 
 /**

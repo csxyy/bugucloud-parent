@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bugucloud.core.mapper.NewsMapper">
+    <!-- 查询资讯列表 -->
+    <select id="selectNewsList" resultType="com.bugucloud.core.vo.NewsItemVO">
+        SELECT
+            id,
+            title,
+            info_type AS infoType,
+            create_time AS createTime,
+            image
+        FROM t_news
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 查询资讯详情 -->
+    <select id="selectNewsDetailById" resultType="com.bugucloud.core.vo.NewsDetailVO">
+        SELECT
+            id,
+            title,
+            content,
+            info_type AS infoType,
+            create_time AS createTime,
+            image
+        FROM t_news
+        WHERE id = #{newsId}
+    </select>
+
+</mapper>

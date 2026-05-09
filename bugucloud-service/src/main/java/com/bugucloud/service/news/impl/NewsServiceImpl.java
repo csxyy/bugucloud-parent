@@ -1,10 +1,17 @@
 package com.bugucloud.service.news.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.News;
 import com.bugucloud.core.mapper.NewsMapper;
+import com.bugucloud.core.vo.NewsDetailVO;
+import com.bugucloud.core.vo.NewsItemVO;
 import com.bugucloud.service.news.NewsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 功能描述: 资讯Service实现
@@ -14,6 +21,24 @@ import org.springframework.stereotype.Service;
  * @date 2026/4/16
  */
 @Service
+@RequiredArgsConstructor
 public class NewsServiceImpl extends ServiceImpl<NewsMapper, News> implements NewsService {
+
+    private final NewsMapper newsMapper;
+
+    @Override
+    public List<NewsItemVO> listNews() {
+        List<NewsItemVO> newsList = newsMapper.selectNewsList();
+        return newsList != null ? newsList : Collections.emptyList();
+    }
+
+    @Override
+    public NewsDetailVO getNewsDetail(Long newsId) {
+        NewsDetailVO newsDetail = newsMapper.selectNewsDetailById(newsId);
+        if (newsDetail == null) {
+            throw new BusinessException("资讯不存在");
+        }
+        return newsDetail;
+    }
 
 }
