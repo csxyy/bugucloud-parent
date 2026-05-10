@@ -3,7 +3,7 @@ package com.bugucloud.core.vo;
 import lombok.Data;
 
 /**
- * 功能描述: 标签DTO
+ * 功能描述: 标签VO
  *
  * @author achen
  * @version 1.0

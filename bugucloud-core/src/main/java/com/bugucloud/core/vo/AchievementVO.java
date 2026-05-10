@@ -1,15 +1,14 @@
-package com.bugucloud.api.web.controller.user.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
 
 /**
- * 功能描述: 个人成就VO
+ * 功能描述:
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/27 - 23:26
+ * @date 2026/5/9 - 11:39
  */
-
 @Data
 public class AchievementVO {
 
@@ -24,4 +23,5 @@ public class AchievementVO {
 
     /** 总获得分享数 */
     private Integer totalShares;
+
 }

@@ -42,6 +42,10 @@ public class User extends BaseEntity {
     @TableField(value = "email")
     private String email;
 
+    @Schema(description = "是否开启邮箱通知 0=关闭 1=开启")
+    @TableField(value = "email_notify")
+    private Integer emailNotify;
+
     @Schema(description = "个人简介")
     @TableField(value = "personal_intro")
     private String personalIntro;
@@ -69,6 +73,10 @@ public class User extends BaseEntity {
     @Schema(description = "身份标识 0=普通用户 1=会员 2=管理员")
     @TableField(value = "role")
     private Integer role;
+
+    @Schema(description = "会员生效时间")
+    @TableField(value = "vip_start_time")
+    private LocalDateTime vipStartTime;
 
     @Schema(description = "会员过期时间")
     @TableField(value = "vip_expire_time")

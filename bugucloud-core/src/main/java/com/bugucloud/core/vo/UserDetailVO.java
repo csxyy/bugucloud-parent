@@ -1,19 +1,18 @@
-package com.bugucloud.api.web.controller.user.vo;
+package com.bugucloud.core.vo;
 
 import lombok.Data;
+
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
  * 功能描述: 用户个人主页VO
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/27 - 23:26
+ * @date 2026/5/9 - 11:36
  */
 @Data
-public class UserProfileVO {
-
+public class UserDetailVO {
     /** 用户ID */
     private Long userId;
 
@@ -25,9 +24,6 @@ public class UserProfileVO {
 
     /** IP属地 */
     private String ipLocation;
-
-    /** 个性签名 */
-    private String signature;
 
     /** 创建时间 */
     private LocalDateTime createTime;
@@ -47,15 +43,15 @@ public class UserProfileVO {
     /** 总关注数 */
     private Integer followCount;
 
+    /** 是否是当前登录用户 */
+    private Boolean isSelf;
+
     /** 是否被关注 */
     private Boolean isFollowed;
 
-    /** 是否求更新 */
+    /** 是否被求更新 */
     private Boolean isRequestedUpdate;
 
     /** 个人成就 */
     private AchievementVO achievement;
-
-    /** 该用户的文章列表 */
-    private List<UserArticleVO> articles;
 }

@@ -1,6 +1,11 @@
 package com.bugucloud.api.web.controller.tag;
 
+import com.bugucloud.common.result.Result;
+import com.bugucloud.core.vo.TagVO;
+import com.bugucloud.service.tag.TagService;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -15,11 +20,16 @@ import java.util.List;
 @RestController
 @RequestMapping("/tag")
 @Tag(name = "标签管理")
+@RequiredArgsConstructor
 public class TagController {
-//    @Operation(summary = "查询所有标签分类")
-//    @GetMapping("/list")
-//    public Result<List<CategoryDTO>> listTags() {
-//        return Result.ok();
-//    }
+
+    private final TagService tagService;
+
+    @Operation(summary = "查询所有标签分类")
+    @GetMapping("/list")
+    public Result<List<TagVO>> listTags() {
+        List<TagVO> tags = tagService.listTags();
+        return Result.ok(tags);
+    }
 
 }
