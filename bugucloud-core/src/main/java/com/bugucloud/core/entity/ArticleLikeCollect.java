@@ -21,9 +21,17 @@ public class ArticleLikeCollect extends BaseEntity {
     @TableField(value = "user_id")
     private Long userId;
 
+    @Schema(description = "头像URL(冗余存储)")
+    @TableField(value = "user_avatar")
+    private Long userAvatar;
+
     @Schema(description = "关联文章ID")
     @TableField(value = "article_id")
     private Long articleId;
+
+    @Schema(description = "文章标题(冗余存储)")
+    @TableField(value = "article_title")
+    private Long articleTitle;
 
     @Schema(description = "被操作人ID(文章作者)")
     @TableField(value = "target_user_id")
