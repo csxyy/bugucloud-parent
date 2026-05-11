@@ -1,4 +1,4 @@
-package com.bugucloud.api.web.controller.comment;
+package com.bugucloud.api.web.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bugucloud.common.result.Result;

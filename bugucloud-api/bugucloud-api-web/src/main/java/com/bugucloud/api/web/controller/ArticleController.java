@@ -1,4 +1,4 @@
-package com.bugucloud.api.web.controller.article;
+package com.bugucloud.api.web.controller;
 
 import com.bugucloud.core.vo.ArticleDetailVO;
 import com.bugucloud.core.vo.ArticleItemVO;

@@ -1,4 +1,4 @@
-package com.bugucloud.api.web.controller.user;
+package com.bugucloud.api.web.controller;
 
 import com.bugucloud.common.result.Result;
 import com.bugucloud.core.vo.DashboardVO;
