@@ -104,14 +104,9 @@ public class CommentNotificationServiceImpl implements CommentNotificationServic
                     UserMessage message = new UserMessage();
                     message.setToUserId(targetUserId);
                     message.setFromUserId(fromUserId);
-                    message.setFromNickname(comment.getNickname());
-                    message.setFromAvatar(comment.getAvatar());
                     message.setMsgType(msgType);
-                    message.setArticleId(article.getId());
-                    message.setCommentId(comment.getId());
                     message.setContent(content);
                     message.setIsRead(0);
-                    message.setEmailNotify(0);
                     return message;
                 }).toList();
     }
