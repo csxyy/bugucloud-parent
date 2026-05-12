@@ -48,7 +48,7 @@ public class CommentController {
     @PostMapping("/create")
     @Operation(summary = "创建/回复评论")
     public Result<Long> createComment(@RequestBody @Valid CommentCreateReq req) {
-        Long userId = 1001L;
+        Long userId = 1002L;
         Long commentId = commentService.createComment(req, userId);
         return Result.ok(commentId);
     }

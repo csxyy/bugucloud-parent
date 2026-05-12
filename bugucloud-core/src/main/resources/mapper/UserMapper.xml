@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.bugucloud.core.mapper.UserMapper">
+
+    <!-- 用户详情结果映射 -->
+    <resultMap id="UserDetailMap" type="com.bugucloud.core.vo.UserDetailVO">
+        <id property="userId" column="user_id"/>
+        <result property="nickname" column="nickname"/>
+        <result property="avatar" column="avatar"/>
+        <result property="ipLocation" column="ip_location"/>
+        <result property="createTime" column="create_time"/>
+        <result property="personalIntro" column="personal_intro"/>
+        <result property="totalViews" column="total_views"/>
+        <result property="totalArticles" column="total_articles"/>
+        <result property="followerCount" column="follower_count"/>
+        <result property="followCount" column="follow_count"/>
+        <result property="isFollowed" column="is_followed"/>
+        <result property="isRequestedUpdate" column="is_requested_update"/>
+        <!-- 个人成就映射 -->
+        <association property="achievement" javaType="com.bugucloud.core.vo.AchievementVO">
+            <result property="totalLikes" column="total_likes"/>
+            <result property="totalComments" column="total_comments"/>
+            <result property="totalCollects" column="total_collects"/>
+            <result property="totalShares" column="total_shares"/>
+        </association>
+    </resultMap>
+
+    <!-- 查询用户个人主页信息 -->
+    <select id="selectUserDetail" resultMap="UserDetailMap">
+        SELECT
+        u.id AS user_id,
+        u.nickname,
+        u.avatar,
+        CONCAT(IFNULL(u.country, ''), ' ', IFNULL(u.province, '')) AS ip_location,
+        u.create_time,
+        u.personal_intro,
+        IFNULL(us.total_views, 0) AS total_views,
+        IFNULL(us.total_articles, 0) AS total_articles,
+        IFNULL(us.follower_count, 0) AS follower_count,
+        IFNULL(us.follow_count, 0) AS follow_count,
+        CASE WHEN uf.id IS NOT NULL AND uf.is_cancel = 0 THEN 1 ELSE 0 END AS is_followed,
+        CASE WHEN ufr.id IS NOT NULL AND DATE(ufr.request_time) = CURDATE() THEN 1 ELSE 0 END AS is_requested_update,
+        IFNULL(us.total_likes, 0) AS total_likes,
+        IFNULL(us.total_comments, 0) AS total_comments,
+        IFNULL(us.total_collects, 0) AS total_collects,
+        IFNULL(us.total_shares, 0) AS total_shares
+        FROM t_user u
+        LEFT JOIN t_user_stat us ON u.id = us.user_id
+        <if test="currentUserId != null">
+            LEFT JOIN t_user_follow uf
+            ON u.id = uf.followed_user_id
+            AND uf.user_id = #{currentUserId}
+            AND uf.is_cancel = 0
+            LEFT JOIN t_user_follow_request ufr
+            ON u.id = ufr.followed_user_id
+            AND ufr.user_id = #{currentUserId}
+        </if>
+        WHERE u.id = #{userId}
+        AND u.status = 1
+    </select>
+
+</mapper>

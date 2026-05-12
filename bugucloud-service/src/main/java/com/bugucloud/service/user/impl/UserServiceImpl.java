@@ -1,13 +1,10 @@
 package com.bugucloud.service.user.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.User;
-import com.bugucloud.core.entity.UserMessage;
 import com.bugucloud.core.mapper.UserMapper;
-import com.bugucloud.core.mapper.UserMessageMapper;
 import com.bugucloud.core.vo.DashboardVO;
 import com.bugucloud.core.vo.UserDetailVO;
 import com.bugucloud.core.vo.UserInfoVO;
@@ -35,7 +32,6 @@ import java.time.temporal.ChronoUnit;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final UserMapper userMapper;
-    private final UserMessageMapper userMessageMapper;
 
     @Override
     public UserInfoVO getUserInfo(Long userId) {
