@@ -2,17 +2,16 @@ package com.bugucloud.service.comment.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.bugucloud.core.entity.*;
-import com.bugucloud.core.mapper.CommentMapper;
-import com.bugucloud.core.mapper.UserMessageMapper;
+import com.bugucloud.core.mapper.InteractionMessageMapper;
 import com.bugucloud.service.comment.CommentNotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * 功能描述:
@@ -26,10 +25,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CommentNotificationServiceImpl implements CommentNotificationService {
 
-    private final UserMessageMapper userMessageMapper;
+    private final InteractionMessageMapper interactionMessageMapper;
 
     /**
-     * 发送评论通知（根据业务规则）
+     * 发送评论通知（重构后，只操作t_interaction_msg_unread表）
      *
      * @param comment 当前评论
      * @param article 文章信息
@@ -49,14 +48,22 @@ public class CommentNotificationServiceImpl implements CommentNotificationServic
                 return;
             }
 
-            // 构建批量消息列表
-            List<UserMessage> messages = buildBatchMessages(comment, article, fromUserId, targetUserIds);
+            // 构建批量未读消息列表
+            List<InteractionMessage> messages = buildBatchUnreadMessages(comment, fromUserId, targetUserIds);
 
-            // 批量插入
-            int insertCount = userMessageMapper.batchInsertMessages(messages);
+            // 批量插入未读消息
+            for (InteractionMessage message : messages) {
+                try {
+                    interactionMessageMapper.insert(message);
+                } catch (DuplicateKeyException e) {
+                    // 如果违反唯一约束，说明已存在相同消息，跳过
+                    log.warn("消息已存在，跳过插入，toUserId：{}，msgType：{}，businessId：{}",
+                            message.getToUserId(), message.getMsgType(), message.getBusinessId());
+                }
+            }
 
-            log.info("异步发送评论通知完成，评论ID：{}，通知人数：{}，插入条数：{}",
-                    comment.getId(), targetUserIds.size(), insertCount);
+            log.info("异步发送评论通知完成，评论ID：{}，通知人数：{}",
+                    comment.getId(), targetUserIds.size());
         } catch (Exception e) {
             log.error("异步发送评论通知失败，评论ID：{}", comment.getId(), e);
         }
@@ -88,26 +95,21 @@ public class CommentNotificationServiceImpl implements CommentNotificationServic
     }
 
     /**
-     * 构建批量消息列表
+     * 构建批量未读消息列表
      */
-    private List<UserMessage> buildBatchMessages(Comment comment, Article article,
-                                                 Long fromUserId, List<Long> targetUserIds) {
-        Integer msgType = comment.getParentId() == 0L ? 2 : 3; // 2=评论 3=回复
-
-        // 根据消息类型拼接内容
-        String content = msgType == 2 ?
-                "评论了你的文章《%s》".formatted(article.getTitle()) :
-                "回复了你的评论：%s".formatted(comment.getContent());
-
+    private List<InteractionMessage> buildBatchUnreadMessages(Comment comment, Long fromUserId, List<Long> targetUserIds) {
+        // 消息类型：3=评论（一级评论和二级评论都属于评论类型）
+        // 业务ID：使用评论ID作为业务主键
         return targetUserIds.stream()
                 .map(targetUserId -> {
-                    UserMessage message = new UserMessage();
+                    InteractionMessage message = new InteractionMessage();
                     message.setToUserId(targetUserId);
                     message.setFromUserId(fromUserId);
-                    message.setMsgType(msgType);
-                    message.setContent(content);
-                    message.setIsRead(0);
+                    message.setMsgType(3);  // 3=评论
+                    message.setBusinessId(comment.getId());  // 评论ID作为业务主键
+                    message.setIsRead(0);  // 未读
                     return message;
-                }).toList();
+                })
+                .toList();
     }
 }
