@@ -19,6 +19,9 @@ public class UserInfoVO {
     /** 用户头像URL */
     private String avatar;
 
+    /** 用户名 */
+    private String username;
+
     /** 用户昵称 */
     private String nickname;
 

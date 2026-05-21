@@ -37,6 +37,10 @@ public class Result<T> implements Serializable {
         return build(data, ResultCodeEnum.SUCCESS);
     }
 
+    public static <T> Result<T> ok(String message, T data) {
+        return build(200, message, data);
+    }
+
     // ==================== 系统错误（服务器异常、BUG） ====================
     public static <T> Result<T> error() {
         return build(null, ResultCodeEnum.SYSTEM_ERROR);
