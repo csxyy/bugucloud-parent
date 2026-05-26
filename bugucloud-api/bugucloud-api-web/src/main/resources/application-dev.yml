@@ -25,6 +25,25 @@ spring:
           min-idle: 4           # 最小空闲连接
           max-wait: 2000ms      # 获取连接的最大等待时间
         shutdown-timeout: 100ms # 关闭超时
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: 3025267039@qq.com # 你的QQ邮箱，如 123456@qq.com
+    password: jztlwjfaoudddhba  # 你的QQ邮箱SMTP授权码，不是登录密码
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+          starttls:
+            enable: true
+            required: true
+          # 超时设置
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
 
 
 knife4j:

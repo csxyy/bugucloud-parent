@@ -19,6 +19,10 @@ import java.util.concurrent.ThreadPoolExecutor;
 @Configuration
 @EnableAsync
 public class ThreadPoolConfig {
+
+    /**
+     * 异步发送评论通知
+     */
     @Bean("commentNotificationExecutor")
     public Executor commentNotificationExecutor() {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
@@ -36,6 +40,22 @@ public class ThreadPoolConfig {
         executor.setKeepAliveSeconds(60);
         // 允许核心线程超时
         executor.setAllowCoreThreadTimeOut(true);
+        executor.initialize();
+        return executor;
+    }
+
+    /**
+     * 发邮箱验证码
+     */
+    @Bean("emailExecutor")
+    public Executor emailExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setCorePoolSize(2);
+        executor.setMaxPoolSize(5);
+        executor.setQueueCapacity(50);
+        executor.setThreadNamePrefix("email-");
+        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
+        executor.setKeepAliveSeconds(60);
         executor.initialize();
         return executor;
     }

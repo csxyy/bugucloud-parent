@@ -4,10 +4,10 @@ import com.bugucloud.common.result.Result;
 import com.bugucloud.core.vo.LoginVO;
 import com.bugucloud.core.vo.TokenRefreshVO;
 import com.bugucloud.service.auth.AuthService;
-import com.bugucloud.service.req.LoginReq;
-import com.bugucloud.service.req.RefreshReq;
+import com.bugucloud.service.req.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -59,5 +59,35 @@ public class AuthController {
         return Result.ok("登出成功", null);
     }
 
+
+    /**
+     * 发送验证码
+     */
+    @Operation(summary = "发送验证码")
+    @PostMapping("/send-code")
+    public Result<Void> sendVerificationCode(@Valid @RequestBody SendCodeReq req) {
+        authService.sendVerificationCode(req.getEmail());
+        return Result.ok();
+    }
+
+    /**
+     * 用户注册
+     */
+    @Operation(summary = "用户注册")
+    @PostMapping("/register")
+    public Result<String> register(@Valid @RequestBody RegisterReq req) {
+        authService.register(req);
+        return Result.ok("注册成功");
+    }
+
+    /**
+     * 找回密码
+     */
+    @Operation(summary = "找回密码")
+    @PostMapping("/reset-password")
+    public Result<String> resetPassword(@Valid @RequestBody ResetPasswordReq req) {
+        authService.resetPassword(req);
+        return Result.ok("密码重置成功");
+    }
 
 }
