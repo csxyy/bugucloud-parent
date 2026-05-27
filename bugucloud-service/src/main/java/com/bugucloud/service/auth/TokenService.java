@@ -26,8 +26,7 @@ public class TokenService {
     // 实际项目用 Redis：Key = "used_jti:" + tokenId, Value = "1", TTL = 剩余有效期
     private final Set<String> usedRefreshTokens = ConcurrentHashMap.newKeySet();
 
-    // 用于存储某个用户的活跃 Refresh Token（实际项目用 Redis Set）
-    // Key = "user_tokens:" + username, Value = Set<tokenId>
+    // Key = "user_tokens:" + userId, Value = Set<tokenId>
     private final ConcurrentHashMap<String, Set<String>> userTokenMap = new ConcurrentHashMap<>();
 
     /**
@@ -42,9 +41,8 @@ public class TokenService {
         // 2. 【重用检测】检查这个 Token 是否已经被用过
         String tokenId = jwtUtils.getTokenId(oldRefreshToken);
         if (usedRefreshTokens.contains(tokenId)) {
-            // 同一 Token 被用了两次 → Token 泄露
-            String username = jwtUtils.getUsernameFromToken(oldRefreshToken);
-            revokeAllTokensForUser(username);
+            Long userId = jwtUtils.getUserIdFromToken(oldRefreshToken);
+            revokeAllTokensForUser(userId);
             throw new BusinessException("检测到 Token 泄露，请重新登录");
         }
 
@@ -52,14 +50,15 @@ public class TokenService {
         usedRefreshTokens.add(tokenId);
 
         // 4. 生成新的 Token 对
-        String username = jwtUtils.getUsernameFromToken(oldRefreshToken);
-        String newAccessToken = jwtUtils.generateAccessToken(username);
-        String newRefreshToken = jwtUtils.generateRefreshToken(username);
+        Long userId = jwtUtils.getUserIdFromToken(oldRefreshToken);
+        String newAccessToken = jwtUtils.generateAccessToken(userId);
+        String newRefreshToken = jwtUtils.generateRefreshToken(userId);
 
         // 5. 将新 Token 记录到用户令牌池
         String newTokenId = jwtUtils.getTokenId(newRefreshToken);
+        String userKey = "user_tokens:" + userId;
         userTokenMap
-                .computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet())
+                .computeIfAbsent(userKey, k -> ConcurrentHashMap.newKeySet())
                 .add(newTokenId);
 
         return new TokenPair(newAccessToken, newRefreshToken);
@@ -68,13 +67,14 @@ public class TokenService {
     /**
      * 登录时调用：生成初始 Token 对并登记
      */
-    public TokenPair createInitialTokens(String username) {
-        String accessToken = jwtUtils.generateAccessToken(username);
-        String refreshToken = jwtUtils.generateRefreshToken(username);
+    public TokenPair createInitialTokens(Long userId) {
+        String accessToken = jwtUtils.generateAccessToken(userId);
+        String refreshToken = jwtUtils.generateRefreshToken(userId);
 
         String tokenId = jwtUtils.getTokenId(refreshToken);
+        String userKey = "user_tokens:" + userId;
         userTokenMap
-                .computeIfAbsent(username, k -> ConcurrentHashMap.newKeySet())
+                .computeIfAbsent(userKey, k -> ConcurrentHashMap.newKeySet())
                 .add(tokenId);
 
         return new TokenPair(accessToken, refreshToken);
@@ -83,8 +83,9 @@ public class TokenService {
     /**
      * 撤销某用户的所有 Refresh Token（Token 泄露时调用）
      */
-    public void revokeAllTokensForUser(String username) {
-        Set<String> tokenIds = userTokenMap.remove(username);
+    public void revokeAllTokensForUser(Long userId) {
+        String userKey = "user_tokens:" + userId;
+        Set<String> tokenIds = userTokenMap.remove(userKey);
         if (tokenIds != null) {
             usedRefreshTokens.addAll(tokenIds);
         }

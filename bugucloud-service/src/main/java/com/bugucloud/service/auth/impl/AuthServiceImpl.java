@@ -91,7 +91,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 6. 生成Token
-        TokenService.TokenPair tokenPair = tokenService.createInitialTokens(req.getUsername());
+        TokenService.TokenPair tokenPair = tokenService.createInitialTokens(user.getId());
 
         // 7. 更新最后登录信息
         user.setLastLoginTime(LocalDateTime.now());

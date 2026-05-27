@@ -30,12 +30,12 @@ public class JwtUtils {
     private static final long REFRESH_EXPIRATION_MS = 30L * 24 * 60 * 60 * 1000; // 30 天
 
     // ==================== 生成 Access Token ====================
-    public String generateAccessToken(String username) {
+    public String generateAccessToken(Long userId) {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + ACCESS_EXPIRATION_MS);
 
         return Jwts.builder()
-                .subject(username)
+                .subject(String.valueOf(userId))  // 用户ID作为主题
                 .issuedAt(now)
                 .expiration(expiryDate)
                 .signWith(SECRET_KEY)
@@ -43,33 +43,27 @@ public class JwtUtils {
     }
 
     // ==================== 生成 Refresh Token ====================
-    // 可以带一个唯一ID用于检测重用
-    public String generateRefreshToken(String username) {
-        String tokenId = UUID.randomUUID().toString();  // 每次生成唯一ID
-
+    public String generateRefreshToken(Long userId) {
         return Jwts.builder()
-                .subject(username)
-                .id(tokenId)    // 设置 jti，用于唯一标识
+                .subject(String.valueOf(userId))
+                .id(UUID.randomUUID().toString())   // 可以带一个唯一TokenID用于检测重用
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + REFRESH_EXPIRATION_MS))
                 .signWith(SECRET_KEY)
                 .compact();
     }
 
-    // 从 Refresh Token 中取出 jti，用于判断是否被重用
-    public String getTokenId(String token) {
-        return Jwts.parser()
-                .verifyWith(SECRET_KEY)
-                .build()
-                .parseSignedClaims(token)
-                .getPayload()
-                .getId();
+    // ==================== 通用方法 ====================
+
+    // 从JWT中解析出用户id
+    public Long getUserIdFromToken(String token) {
+        String subject = parseClaims(token).getSubject();
+        return Long.valueOf(subject);
     }
 
-    // ==================== 通用方法 ====================
-    // 从 JWT 中解析出用户名
-    public String getUsernameFromToken(String token) {
-        return parseClaims(token).getSubject();
+    // 从 Refresh Token 中取出 jti，用于判断是否被重用
+    public String getTokenId(String token) {
+        return parseClaims(token).getId();
     }
 
     // 校验 JWT 是否有效

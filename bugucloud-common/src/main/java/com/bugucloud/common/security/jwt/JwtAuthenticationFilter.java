@@ -49,9 +49,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         // 情况3：Token 有效 → 设置认证上下文
-        String username = jwtUtils.getUsernameFromToken(token);
+        Long userId = jwtUtils.getUserIdFromToken(token);
         UsernamePasswordAuthenticationToken authentication =
-                new UsernamePasswordAuthenticationToken(username, null, Collections.emptyList());
+                new UsernamePasswordAuthenticationToken(userId, null, Collections.emptyList());
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         filterChain.doFilter(request, response);
