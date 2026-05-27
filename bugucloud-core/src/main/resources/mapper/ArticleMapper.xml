@@ -1,6 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bugucloud.core.mapper.ArticleMapper">
+
+    <!-- 根据标签ID查询文章列表 -->
+    <select id="selectArticleListByTagId" resultType="com.bugucloud.core.vo.ArticleItemVO">
+        SELECT
+        u.id AS userId,
+        u.avatar,
+        u.nickname,
+        a.id AS articleId,
+        a.title,
+        a.summary,
+        a.cover,
+        a.views,
+        a.likes,
+        a.collects
+        FROM t_article a
+        INNER JOIN `t_user` u ON a.user_id = u.id
+
+        <!-- 如果传了tagId，则关联标签表进行过滤 -->
+        <if test="tagId != null">
+            INNER JOIN t_article_tag atg ON a.id = atg.article_id AND atg.tag_id = #{tagId}
+        </if>
+
+        WHERE a.is_published = 1
+        AND a.audit_status = 1
+        AND u.status = 1
+
+        <!-- 按排序号和创建时间倒序 -->
+        ORDER BY a.sort DESC, a.create_time DESC
+    </select>
+
+
     <!-- 文章详情结果映射 -->
     <resultMap id="ArticleDetailMap" type="com.bugucloud.core.vo.ArticleDetailVO">
         <id property="id" column="article_id"/>
@@ -38,7 +69,6 @@
             <result property="name" column="tag_name"/>
         </collection>
     </resultMap>
-
 
     <!-- 查询文章详情 -->
     <select id="selectArticleDetailById" resultMap="ArticleDetailMap">
@@ -130,35 +160,6 @@
           AND audit_status = 1
         ORDER BY create_time DESC
             LIMIT 5
-    </select>
-
-    <!-- 根据标签ID查询文章列表 -->
-    <select id="selectArticleListByTagId" resultType="com.bugucloud.core.vo.ArticleItemVO">
-        SELECT
-        u.id AS userId,
-        u.avatar,
-        u.nickname,
-        a.id AS articleId,
-        a.title,
-        a.summary,
-        a.cover,
-        a.views,
-        a.likes,
-        a.collects
-        FROM t_article a
-        INNER JOIN `t_user` u ON a.user_id = u.id
-
-        <!-- 如果传了tagId，则关联标签表进行过滤 -->
-        <if test="tagId != null">
-            INNER JOIN t_article_tag atg ON a.id = atg.article_id AND atg.tag_id = #{tagId}
-        </if>
-
-        WHERE a.is_published = 1
-        AND a.audit_status = 1
-        AND u.status = 1
-
-        <!-- 按排序号和创建时间倒序 -->
-        ORDER BY a.sort DESC, a.create_time DESC
     </select>
 
     <!-- 根据用户ID查询文章管理列表 -->

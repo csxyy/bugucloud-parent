@@ -19,19 +19,19 @@ import java.util.List;
 public interface ArticleService extends IService<Article> {
 
     /**
+     * 根据标签ID查询文章列表
+     * @param tagId 标签ID（为null时查询全部已发布文章）
+     * @return 文章列表
+     */
+    List<ArticleItemVO> getArticleListByTagId(Long tagId);
+
+    /**
      * 根据文章ID查询文章详情
      * @param articleId 文章ID
      * @param currentUserId 当前登录用户ID（可为null，表示未登录）
      * @return 文章详情VO
      */
     ArticleDetailVO getArticleDetailById(Long articleId, Long currentUserId);
-
-    /**
-     * 根据标签ID查询文章列表
-     * @param tagId 标签ID（为null时查询全部已发布文章）
-     * @return 文章列表
-     */
-    List<ArticleItemVO> getArticleListByTagId(Long tagId);
 
     /**
      * 根据用户ID查询文章管理列表（包含所有状态）

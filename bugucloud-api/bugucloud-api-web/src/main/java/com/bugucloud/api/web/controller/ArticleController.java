@@ -1,5 +1,6 @@
 package com.bugucloud.api.web.controller;
 
+import com.bugucloud.common.util.SecurityUtil;
 import com.bugucloud.core.vo.ArticleDetailVO;
 import com.bugucloud.core.vo.ArticleItemVO;
 import com.bugucloud.core.vo.ArticleManageVO;
@@ -30,22 +31,23 @@ public class ArticleController {
 
     private final ArticleService articleService;
 
-    @Operation(summary = "根据文章ID查询文章详情")
-    @GetMapping("/detail/{articleId}")
-    public Result<ArticleDetailVO> getArticleDetail(
-            @Parameter(description = "文章ID") @PathVariable Long articleId) {
-        Long userId = null;
-        ArticleDetailVO articleDetailDTO = articleService.getArticleDetailById(articleId, userId);
-        return Result.ok(articleDetailDTO);
-    }
 
     @Operation(summary = "根据标签ID查询文章列表")
     @GetMapping("/list")
     public Result<List<ArticleItemVO>> getArticleListByTagId(
             @Parameter(description = "标签ID", allowEmptyValue = true)
-            @RequestParam(required = false) Long tagId) {
+            @RequestParam(name = "tag_id", required = false) Long tagId) {
         List<ArticleItemVO> list = articleService.getArticleListByTagId(tagId);
         return Result.ok(list);
+    }
+
+    @Operation(summary = "根据文章ID查询文章详情")
+    @GetMapping("/detail/{articleId}")
+    public Result<ArticleDetailVO> getArticleDetail(
+            @Parameter(description = "文章ID") @PathVariable Long articleId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArticleDetailVO articleDetailDTO = articleService.getArticleDetailById(articleId, userId);
+        return Result.ok(articleDetailDTO);
     }
 
     @Operation(summary = "查询文章管理列表")

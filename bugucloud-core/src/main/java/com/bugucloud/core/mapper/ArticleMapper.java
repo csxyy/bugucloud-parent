@@ -19,6 +19,12 @@ import java.util.List;
  * @date 2026/4/16 - 15:39
  */
 public interface ArticleMapper extends BaseMapper<Article> {
+
+    /**
+     * 根据标签ID查询文章列表（tagId为null时查询全部）
+     */
+    List<ArticleItemVO> selectArticleListByTagId(@Param("tagId") Long tagId);
+
     /**
      * 根据文章ID查询文章详情（包含作者信息、标签等）
      */
@@ -30,11 +36,6 @@ public interface ArticleMapper extends BaseMapper<Article> {
      */
     List<AuthorOtherArticleVO> selectAuthorOtherArticles(@Param("userId") Long userId,
                                                          @Param("excludeArticleId") Long excludeArticleId);
-
-    /**
-     * 根据标签ID查询文章列表（tagId为null时查询全部）
-     */
-    List<ArticleItemVO> selectArticleListByTagId(@Param("tagId") Long tagId);
 
     /**
      * 根据用户ID查询文章管理列表（包含所有状态的文章）

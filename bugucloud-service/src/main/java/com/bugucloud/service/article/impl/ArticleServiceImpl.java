@@ -34,6 +34,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final ArticleMapper articleMapper;
 
     @Override
+    public List<ArticleItemVO> getArticleListByTagId(Long tagId) {
+        return articleMapper.selectArticleListByTagId(tagId);
+    }
+
+    @Override
     public ArticleDetailVO getArticleDetailById(Long articleId, Long currentUserId) {
         // 查询文章详情
         ArticleDetailVO detail = articleMapper.selectArticleDetailById(articleId, currentUserId);
@@ -51,11 +56,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
 
         return detail;
-    }
-
-    @Override
-    public List<ArticleItemVO> getArticleListByTagId(Long tagId) {
-        return articleMapper.selectArticleListByTagId(tagId);
     }
 
     @Override
