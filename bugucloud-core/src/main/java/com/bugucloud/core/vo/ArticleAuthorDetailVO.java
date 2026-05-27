@@ -1,17 +1,18 @@
 package com.bugucloud.core.vo;
 
 import lombok.Data;
+
 import java.util.List;
 
 /**
- * 功能描述: DTO
+ * 功能描述: 作者详情 + 侧边栏 VO
  *
  * @author achen
  * @version 1.0
- * @date 2026/4/28 - 14:44
+ * @date 2026/5/27 - 22:27
  */
 @Data
-public class ArticleAuthorVO {
+public class ArticleAuthorDetailVO {
     /** 用户ID */
     private Long id;
 
@@ -24,10 +25,9 @@ public class ArticleAuthorVO {
     /** 用户个人简介 */
     private String personalIntro;
 
-    /** 身份标识 0=普通用户 1=会员 2=管理员 */
+    /** 身份标识 0=普通用户 1=会员 2=超级会员 3=管理员 */
     private Integer role;
 
-    // ===============用户统计数据================
     /** 总原创数 */
     private Integer totalArticles;
 
@@ -40,6 +40,6 @@ public class ArticleAuthorVO {
     /** 粉丝数 */
     private Integer followerCount;
 
-    /** 该用户的其他文章 */
+    /** 该用户的其他文章（排除当前文章，最新5篇） */
     private List<AuthorOtherArticleVO> otherArticles;
 }

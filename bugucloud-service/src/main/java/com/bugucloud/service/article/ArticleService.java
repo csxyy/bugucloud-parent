@@ -2,9 +2,7 @@ package com.bugucloud.service.article;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.Article;
-import com.bugucloud.core.vo.ArticleDetailVO;
-import com.bugucloud.core.vo.ArticleItemVO;
-import com.bugucloud.core.vo.ArticleManageVO;
+import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.ArticleCreateReq;
 
 import java.util.List;
@@ -26,12 +24,21 @@ public interface ArticleService extends IService<Article> {
     List<ArticleItemVO> getArticleListByTagId(Long tagId);
 
     /**
-     * 根据文章ID查询文章详情
-     * @param articleId 文章ID
-     * @param currentUserId 当前登录用户ID（可为null，表示未登录）
-     * @return 文章详情VO
+     * 获取文章核心内容（包含标签、底部栏作者简要信息）
      */
-    ArticleDetailVO getArticleDetailById(Long articleId, Long currentUserId);
+    ArticleContentVO getArticleContent(Long articleId);
+
+    /**
+     * 获取文章作者详细信息（包含统计数据和其他文章）
+     */
+    ArticleAuthorDetailVO getArticleAuthor(Long articleId);
+
+    /**
+     * 获取当前用户对文章的交互状态（点赞/收藏/关注）
+     * @param articleId 文章ID
+     * @param userId 当前用户ID，可为null
+     */
+    ArticleInteractionVO getInteraction(Long articleId, Long userId);
 
     /**
      * 根据用户ID查询文章管理列表（包含所有状态）

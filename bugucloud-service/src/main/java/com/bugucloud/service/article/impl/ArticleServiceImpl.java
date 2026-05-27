@@ -5,10 +5,10 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.Article;
 import com.bugucloud.core.entity.ArticleTag;
+import com.bugucloud.core.mapper.ArticleAuthorMapper;
+import com.bugucloud.core.mapper.ArticleContentMapper;
 import com.bugucloud.core.mapper.ArticleMapper;
-import com.bugucloud.core.vo.ArticleDetailVO;
-import com.bugucloud.core.vo.ArticleItemVO;
-import com.bugucloud.core.vo.ArticleManageVO;
+import com.bugucloud.core.vo.*;
 import com.bugucloud.service.article.ArticleService;
 import com.bugucloud.service.req.ArticleCreateReq;
 import lombok.RequiredArgsConstructor;
@@ -33,29 +33,77 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
     private final ArticleMapper articleMapper;
 
+    private final ArticleContentMapper articleContentMapper;
+
+    private final ArticleAuthorMapper articleAuthorMapper;
+
+
     @Override
     public List<ArticleItemVO> getArticleListByTagId(Long tagId) {
         return articleMapper.selectArticleListByTagId(tagId);
     }
 
+    // ========== 接口1：文章核心内容 ==========
     @Override
-    public ArticleDetailVO getArticleDetailById(Long articleId, Long currentUserId) {
-        // 查询文章详情
-        ArticleDetailVO detail = articleMapper.selectArticleDetailById(articleId, currentUserId);
+    public ArticleContentVO getArticleContent(Long articleId) {
+        ArticleContentVO vo = articleContentMapper.selectArticleContent(articleId);
+        if (vo == null) {
+            throw new BusinessException("文章不存在或未发布");
+        }
+        return vo;
+    }
 
-        if (detail == null) {
+    // ========== 接口2：作者详情 + 侧边栏 ==========
+    @Override
+    public ArticleAuthorDetailVO getArticleAuthor(Long articleId) {
+        // 先查出文章对应的作者ID
+        Long authorId = articleMapper.selectAuthorIdByArticleId(articleId);
+        if (authorId == null) {
             throw new BusinessException("文章不存在或未发布");
         }
 
-        // 如果currentUserId为null，说明未登录，isLiked、isCollected、isFollowed已在SQL中处理为0
-        // 这里可以根据业务需要，对未登录用户的这些字段强制设置为false
-        if (currentUserId == null) {
-            detail.setIsLiked(false);
-            detail.setIsCollected(false);
-            detail.setIsFollowed(false);
+        // 查询作者详情
+        ArticleAuthorDetailVO vo = articleAuthorMapper.selectAuthorDetail(authorId);
+        if (vo == null) {
+            throw new BusinessException("作者信息不存在");
         }
 
-        return detail;
+        // 查询作者其他文章（排除当前文章，最新5篇）
+        List<AuthorOtherArticleVO> otherArticles = articleAuthorMapper
+                .selectAuthorOtherArticles(authorId, articleId);
+        vo.setOtherArticles(otherArticles);
+
+        return vo;
+    }
+
+    // ========== 接口3：用户交互状态 ==========
+    @Override
+    public ArticleInteractionVO getInteraction(Long articleId, Long userId) {
+        ArticleInteractionVO vo = new ArticleInteractionVO();
+        vo.setArticleId(articleId);
+
+        // 未登录用户全部返回 false
+        if (userId == null) {
+            vo.setIsLiked(false);
+            vo.setIsCollected(false);
+            vo.setIsFollowedAuthor(false);
+            return vo;
+        }
+
+        // 1. 查询是否点赞
+        Long likedCount = articleMapper.selectUserLiked(articleId, userId);
+        vo.setIsLiked(likedCount != null && likedCount > 0);
+
+        // 2. 查询是否收藏
+        Long collectedCount = articleMapper.selectUserCollected(articleId, userId);
+        vo.setIsCollected(collectedCount != null && collectedCount > 0);
+
+        // 3. 查询是否关注作者
+        Long authorId = articleMapper.selectAuthorIdByArticleId(articleId);
+        Long followedCount = articleMapper.selectUserFollowed(authorId, userId);
+        vo.setIsFollowedAuthor(followedCount != null && followedCount > 0);
+
+        return vo;
     }
 
     @Override

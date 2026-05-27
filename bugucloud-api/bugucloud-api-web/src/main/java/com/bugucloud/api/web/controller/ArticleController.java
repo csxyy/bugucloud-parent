@@ -1,9 +1,7 @@
 package com.bugucloud.api.web.controller;
 
 import com.bugucloud.common.util.SecurityUtil;
-import com.bugucloud.core.vo.ArticleDetailVO;
-import com.bugucloud.core.vo.ArticleItemVO;
-import com.bugucloud.core.vo.ArticleManageVO;
+import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.ArticleCreateReq;
 import com.bugucloud.common.result.Result;
 import com.bugucloud.service.article.ArticleService;
@@ -41,13 +39,33 @@ public class ArticleController {
         return Result.ok(list);
     }
 
-    @Operation(summary = "根据文章ID查询文章详情")
-    @GetMapping("/detail/{articleId}")
-    public Result<ArticleDetailVO> getArticleDetail(
+    // ======================= 文章详情页 ==========================
+    // ==================== 接口1：文章核心内容（首屏必需） ====================
+    @Operation(summary = "获取文章核心内容")
+    @GetMapping("/detail/{articleId}/content")
+    public Result<ArticleContentVO> getArticleContent(
+            @Parameter(description = "文章ID") @PathVariable Long articleId) {
+        ArticleContentVO vo = articleService.getArticleContent(articleId);
+        return Result.ok(vo);
+    }
+
+    // ==================== 接口2：作者详情 + 侧边栏数据 ====================
+    @Operation(summary = "获取文章作者详细信息（右侧栏）")
+    @GetMapping("/detail/{articleId}/author")
+    public Result<ArticleAuthorDetailVO> getArticleAuthor(
+            @Parameter(description = "文章ID") @PathVariable Long articleId) {
+        ArticleAuthorDetailVO vo = articleService.getArticleAuthor(articleId);
+        return Result.ok(vo);
+    }
+
+    // ==================== 接口3：用户交互状态 ====================
+    @Operation(summary = "获取当前用户对文章的交互状态")
+    @GetMapping("/detail/{articleId}/interaction")
+    public Result<ArticleInteractionVO> getInteraction(
             @Parameter(description = "文章ID") @PathVariable Long articleId) {
         Long userId = SecurityUtil.getCurrentUserId();
-        ArticleDetailVO articleDetailDTO = articleService.getArticleDetailById(articleId, userId);
-        return Result.ok(articleDetailDTO);
+        ArticleInteractionVO vo = articleService.getInteraction(articleId, userId);
+        return Result.ok(vo);
     }
 
     @Operation(summary = "查询文章管理列表")
