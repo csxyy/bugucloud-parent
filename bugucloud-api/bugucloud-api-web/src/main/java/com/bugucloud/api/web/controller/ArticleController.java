@@ -5,6 +5,7 @@ import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.ArticleCreateReq;
 import com.bugucloud.common.result.Result;
 import com.bugucloud.service.article.ArticleService;
+import com.bugucloud.service.req.ArticleLikeCollectReq;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -66,6 +67,17 @@ public class ArticleController {
         Long userId = SecurityUtil.getCurrentUserId();
         ArticleInteractionVO vo = articleService.getInteraction(articleId, userId);
         return Result.ok(vo);
+    }
+
+    /**
+     * 文章点赞/收藏
+     */
+    @Operation(summary = "文章点赞/收藏")
+    @PostMapping("/like-collect")
+    public Result<Void> likeOrCollectArticle(@Valid @RequestBody ArticleLikeCollectReq req) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        articleService.likeOrCollectArticle(userId, req);
+        return Result.ok();
     }
 
     @Operation(summary = "查询文章管理列表")

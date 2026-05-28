@@ -1,18 +1,21 @@
 package com.bugucloud.service.article.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
-import com.bugucloud.core.entity.Article;
-import com.bugucloud.core.entity.ArticleTag;
-import com.bugucloud.core.mapper.ArticleAuthorMapper;
-import com.bugucloud.core.mapper.ArticleContentMapper;
-import com.bugucloud.core.mapper.ArticleMapper;
+import com.bugucloud.core.entity.*;
+import com.bugucloud.core.mapper.*;
 import com.bugucloud.core.vo.*;
 import com.bugucloud.service.article.ArticleService;
+import com.bugucloud.service.async.AsyncTaskService;
 import com.bugucloud.service.req.ArticleCreateReq;
+import com.bugucloud.service.req.ArticleLikeCollectReq;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -36,6 +39,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
     private final ArticleContentMapper articleContentMapper;
 
     private final ArticleAuthorMapper articleAuthorMapper;
+
+    private final ArticleLikeCollectMapper articleLikeCollectMapper;
+
+    private final UserMapper userMapper;
+
+    private final AsyncTaskService asyncTaskService;
 
 
     @Override
@@ -109,6 +118,81 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
         return vo;
     }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void likeOrCollectArticle(Long userId, ArticleLikeCollectReq req) {
+        // 1. 查询文章是否存在
+        Article article = articleMapper.selectById(req.getArticleId());
+        if (article == null) {
+            throw new BusinessException("文章不存在");
+        }
+
+        // 2. 查询是否已有操作记录
+        ArticleLikeCollect likeCollect = articleLikeCollectMapper.selectOne(
+                new LambdaQueryWrapper<ArticleLikeCollect>()
+                        .eq(ArticleLikeCollect::getUserId, userId)
+                        .eq(ArticleLikeCollect::getArticleId, req.getArticleId())
+                        .eq(ArticleLikeCollect::getMsgType, req.getMsgType())
+        );
+
+        if (likeCollect == null) {
+            // 3. 第一次操作
+            if (req.getIsActive()) {
+                // 3.1 触发操作：创建记录
+                likeCollect = new ArticleLikeCollect();
+                likeCollect.setUserId(userId);
+                likeCollect.setArticleId(req.getArticleId());
+                likeCollect.setArticleTitle(article.getTitle());
+                likeCollect.setTargetUserId(article.getUserId());
+                likeCollect.setMsgType(req.getMsgType());
+                likeCollect.setIsCancel(0);
+
+                // 冗余用户头像
+                User user = userMapper.selectById(userId);
+                if (user != null) {
+                    likeCollect.setUserAvatar(user.getAvatar());
+                }
+
+                articleLikeCollectMapper.insert(likeCollect);
+
+                // 异步更新统计
+                asyncTaskService.updateArticleStats(req.getArticleId(), req.getMsgType(), true);
+                asyncTaskService.updateUserStats(article.getUserId(), req.getMsgType(), true);
+
+                // 异步发送通知（如果不是作者自己）
+                if (!userId.equals(article.getUserId())) {
+                    asyncTaskService.sendLikeCollectNotification(likeCollect, article.getUserId());
+                }
+            }
+        } else {
+            // 4. 已有记录，根据操作类型和当前状态处理
+            if (req.getIsActive()) {
+                // 4.1 触发操作
+                if (likeCollect.getIsCancel() == 1) {
+                    // 之前取消过，重新触发
+                    likeCollect.setIsCancel(0);
+                    articleLikeCollectMapper.updateById(likeCollect);
+
+                    // 异步更新统计
+                    asyncTaskService.updateArticleStats(req.getArticleId(), req.getMsgType(), true);
+                    asyncTaskService.updateUserStats(article.getUserId(), req.getMsgType(), true);
+                }
+            } else {
+                // 4.2 取消操作
+                if (likeCollect.getIsCancel() == 0) {
+                    // 取消操作
+                    likeCollect.setIsCancel(1);
+                    articleLikeCollectMapper.updateById(likeCollect);
+
+                    // 异步更新统计
+                    asyncTaskService.updateArticleStats(req.getArticleId(), req.getMsgType(), false);
+                    asyncTaskService.updateUserStats(article.getUserId(), req.getMsgType(), false);
+                }
+            }
+        }
+    }
+
 
     @Override
     public List<ArticleManageVO> getArticleManageListByUserId(Long userId) {

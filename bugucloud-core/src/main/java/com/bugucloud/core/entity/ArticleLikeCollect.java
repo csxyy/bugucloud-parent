@@ -12,7 +12,7 @@ import lombok.Data;
  * @version 1.0.0
  * @date 2026/4/16 - 15:12
  */
-@TableName("t_articleLike_collect")
+@TableName("t_article_like_collect")
 @Data
 @Schema(description = "文章点赞收藏记录表")
 public class ArticleLikeCollect extends BaseEntity {
@@ -23,7 +23,7 @@ public class ArticleLikeCollect extends BaseEntity {
 
     @Schema(description = "头像URL(冗余存储)")
     @TableField(value = "user_avatar")
-    private Long userAvatar;
+    private String userAvatar;
 
     @Schema(description = "关联文章ID")
     @TableField(value = "article_id")
@@ -31,7 +31,7 @@ public class ArticleLikeCollect extends BaseEntity {
 
     @Schema(description = "文章标题(冗余存储)")
     @TableField(value = "article_title")
-    private Long articleTitle;
+    private String articleTitle;
 
     @Schema(description = "被操作人ID(文章作者)")
     @TableField(value = "target_user_id")
