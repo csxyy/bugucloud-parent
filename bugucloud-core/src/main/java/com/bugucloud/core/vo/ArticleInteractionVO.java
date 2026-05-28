@@ -22,4 +22,7 @@ public class ArticleInteractionVO {
 
     /** 当前用户是否关注了作者 */
     private Boolean isFollowedAuthor;
+
+    /** 是否为自己的文章 */
+    private Boolean isSelf;
 }

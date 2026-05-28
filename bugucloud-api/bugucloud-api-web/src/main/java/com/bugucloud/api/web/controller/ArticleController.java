@@ -71,7 +71,7 @@ public class ArticleController {
     @Operation(summary = "查询文章管理列表")
     @GetMapping("/manage")
     public Result<List<ArticleManageVO>> getArticleManageList() {
-        Long userId = 1002L;
+        Long userId = SecurityUtil.getCurrentUserId();
         List<ArticleManageVO> list = articleService.getArticleManageListByUserId(userId);
         return Result.ok(list);
     }
@@ -79,9 +79,8 @@ public class ArticleController {
     @Operation(summary = "新增文章")
     @PostMapping("/create")
     public Result<Void> createArticle(@RequestBody @Valid ArticleCreateReq request) {
-        Long userId = 1002L;
-        Long article = articleService.createArticle(request, userId);
-        System.out.println(article);
+        Long userId = SecurityUtil.getCurrentUserId();
+        articleService.createArticle(request, userId);
         return Result.ok();
     }
 }

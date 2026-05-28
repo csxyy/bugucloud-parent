@@ -90,6 +90,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
             return vo;
         }
 
+
         // 1. 查询是否点赞
         Long likedCount = articleMapper.selectUserLiked(articleId, userId);
         vo.setIsLiked(likedCount != null && likedCount > 0);
@@ -102,6 +103,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         Long authorId = articleMapper.selectAuthorIdByArticleId(articleId);
         Long followedCount = articleMapper.selectUserFollowed(authorId, userId);
         vo.setIsFollowedAuthor(followedCount != null && followedCount > 0);
+
+        // 4. 判断是否为自己的文章
+        vo.setIsSelf(userId.equals(authorId));
 
         return vo;
     }
