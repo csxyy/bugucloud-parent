@@ -44,7 +44,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         boolean isSelf = currentUserId != null && currentUserId.equals(userId);
         userDetail.setIsSelf(isSelf);
 
+        // 格式化IP属地：中国只显示省份，其他国家显示国家
+        userDetail.setIpLocation(formatIpLocation(userDetail.getIpLocation()));
+
         return userDetail;
+    }
+
+    /**
+     * 格式化IP属地
+     * 规则：
+     * - 中国的只显示省份（如：中国 上海 → 上海）
+     * - 其他国家的显示国家名（如：美国 → 美国）
+     * - 没有IP属地的显示"未知"
+     */
+    private String formatIpLocation(String ipLocation) {
+        if (ipLocation == null || ipLocation.isBlank()) {
+            return "未知";
+        }
+
+        // 去除首尾空格
+        String location = ipLocation.trim();
+
+        // 如果包含"中国"，只显示后面的省份
+        if (location.startsWith("中国")) {
+            // 去掉"中国"和空格
+            String province = location.replace("中国", "").trim();
+            // 如果省份为空，返回"未知"
+            return province.isEmpty() ? "未知" : province;
+        }
+
+        // 其他国家直接返回
+        return location;
     }
 
     @Override
