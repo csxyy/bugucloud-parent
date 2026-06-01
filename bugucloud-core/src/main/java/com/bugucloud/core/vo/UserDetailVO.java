@@ -16,16 +16,16 @@ public class UserDetailVO {
     /** 用户ID */
     private Long userId;
 
-    /** 用户昵称 */
-    private String nickname;
-
     /** 用户头像URL */
     private String avatar;
+
+    /** 用户昵称 */
+    private String nickname;
 
     /** IP属地 */
     private String ipLocation;
 
-    /** 创建时间 */
+    /** 加入社区时间（创建时间） */
     private LocalDateTime createTime;
 
     /** 个人简介 */
@@ -49,7 +49,7 @@ public class UserDetailVO {
     /** 是否被关注 */
     private Boolean isFollowed;
 
-    /** 是否被求更新 */
+    /** 是否被求更新（今天是否已求更新） */
     private Boolean isRequestedUpdate;
 
     /** 个人成就 */

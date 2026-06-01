@@ -17,6 +17,9 @@ public class UserArticleVO {
     /** 文章ID */
     private Long articleId;
 
+    /** 文章封面URL */
+    private String cover;
+
     /** 文章标题 */
     private String title;
 
@@ -37,5 +40,4 @@ public class UserArticleVO {
 
     /** 收藏数 */
     private Integer collects;
-
 }

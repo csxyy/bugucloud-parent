@@ -23,5 +23,4 @@ public class AchievementVO {
 
     /** 总获得分享数 */
     private Integer totalShares;
-
 }

@@ -38,8 +38,16 @@
         IFNULL(us.total_articles, 0) AS total_articles,
         IFNULL(us.follower_count, 0) AS follower_count,
         IFNULL(us.follow_count, 0) AS follow_count,
-        CASE WHEN uf.id IS NOT NULL AND uf.is_cancel = 0 THEN 1 ELSE 0 END AS is_followed,
-        CASE WHEN ufr.id IS NOT NULL AND DATE(ufr.request_time) = CURDATE() THEN 1 ELSE 0 END AS is_requested_update,
+        <!-- 当前用户是否关注了该用户 -->
+        <if test="currentUserId != null">
+            CASE WHEN uf.id IS NOT NULL AND uf.is_cancel = 0 THEN 1 ELSE 0 END AS is_followed,
+            CASE WHEN ufr.id IS NOT NULL AND DATE(ufr.request_time) = CURDATE() THEN 1 ELSE 0 END AS is_requested_update,
+        </if>
+        <if test="currentUserId == null">
+            0 AS is_followed,
+            0 AS is_requested_update,
+        </if>
+        <!-- 个人成就 -->
         IFNULL(us.total_likes, 0) AS total_likes,
         IFNULL(us.total_comments, 0) AS total_comments,
         IFNULL(us.total_collects, 0) AS total_collects,
@@ -57,6 +65,25 @@
         </if>
         WHERE u.id = #{userId}
         AND u.status = 1
+    </select>
+
+    <!-- 查询用户的文章列表 -->
+    <select id="selectUserArticles" resultType="com.bugucloud.core.vo.UserArticleVO">
+        SELECT
+            a.id AS articleId,
+            a.cover,
+            a.title,
+            a.summary,
+            a.create_time AS createTime,
+            a.views,
+            a.likes,
+            a.comments,
+            a.collects
+        FROM t_article a
+        WHERE a.user_id = #{userId}
+          AND a.is_published = 1
+          AND a.audit_status = 1
+        ORDER BY a.create_time DESC
     </select>
 
 </mapper>

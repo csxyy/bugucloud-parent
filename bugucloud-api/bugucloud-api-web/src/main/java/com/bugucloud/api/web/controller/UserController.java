@@ -1,10 +1,8 @@
 package com.bugucloud.api.web.controller;
 
 import com.bugucloud.common.result.Result;
-import com.bugucloud.core.vo.DashboardVO;
-import com.bugucloud.core.vo.UserDetailVO;
-import com.bugucloud.core.vo.UserInfoVO;
-import com.bugucloud.core.vo.UserSettingVO;
+import com.bugucloud.common.util.SecurityUtil;
+import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.ChangePasswordReq;
 import com.bugucloud.service.req.UserUpdateReq;
 import com.bugucloud.service.user.UserService;
@@ -14,6 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 功能描述: 用户中心
@@ -30,21 +30,27 @@ public class UserController {
 
     private final UserService userService;
 
-    @Operation(summary = "查询当前用户基本信息")
-    @GetMapping("/info")
-    public Result<UserInfoVO> getUserInfo() {
-        Long userId = 1001L;
-        UserInfoVO userInfo = userService.getUserInfo(userId);
-        return Result.ok(userInfo);
-    }
-
+    /**
+     * 查询用户个人主页信息（包含个人成就）
+     */
     @Operation(summary = "查询用户个人主页信息")
     @GetMapping("/detail/{userId}")
     public Result<UserDetailVO> getUserDetail(
             @Parameter(description = "用户ID") @PathVariable Long userId) {
-        Long currentUserId = 1001L;
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         UserDetailVO userDetail = userService.getUserDetail(userId, currentUserId);
         return Result.ok(userDetail);
+    }
+
+    /**
+     * 查询用户的文章列表
+     */
+    @Operation(summary = "查询用户的文章列表")
+    @GetMapping("/articles/{userId}")
+    public Result<List<UserArticleVO>> getUserArticles(
+            @Parameter(description = "用户ID") @PathVariable Long userId) {
+        List<UserArticleVO> articles = userService.getUserArticles(userId);
+        return Result.ok(articles);
     }
 
     // ===================================== 个人中心 ========================================

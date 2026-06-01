@@ -5,10 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.User;
 import com.bugucloud.core.mapper.UserMapper;
-import com.bugucloud.core.vo.DashboardVO;
-import com.bugucloud.core.vo.UserDetailVO;
-import com.bugucloud.core.vo.UserInfoVO;
-import com.bugucloud.core.vo.UserSettingVO;
+import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.UserUpdateReq;
 import com.bugucloud.service.user.UserService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * 功能描述: 用户信息Service实现
@@ -34,26 +33,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final UserMapper userMapper;
 
     @Override
-    public UserInfoVO getUserInfo(Long userId) {
-        // 查询用户
-        User user = userMapper.selectById(userId);
-        if (user == null || user.getStatus() != 1) {
-            throw new BusinessException("用户不存在或已被禁用");
-        }
-
-        // 转换为VO
-        UserInfoVO userInfoVO = new UserInfoVO();
-        userInfoVO.setUserId(user.getId());
-        userInfoVO.setAvatar(user.getAvatar());
-        userInfoVO.setUsername(user.getUsername());
-        userInfoVO.setNickname(user.getNickname());
-        userInfoVO.setEmail(user.getEmail());
-        userInfoVO.setRole(user.getRole());
-
-        return userInfoVO;
-    }
-
-    @Override
     public UserDetailVO getUserDetail(Long userId, Long currentUserId) {
         UserDetailVO userDetail = userMapper.selectUserDetail(userId, currentUserId);
 
@@ -65,13 +44,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         boolean isSelf = currentUserId != null && currentUserId.equals(userId);
         userDetail.setIsSelf(isSelf);
 
-        // 如果未登录，设置默认值
-        if (currentUserId == null) {
-            userDetail.setIsFollowed(false);
-            userDetail.setIsRequestedUpdate(false);
-        }
-
         return userDetail;
+    }
+
+    @Override
+    public List<UserArticleVO> getUserArticles(Long userId) {
+        List<UserArticleVO> articles = userMapper.selectUserArticles(userId);
+        return articles != null ? articles : Collections.emptyList();
     }
 
 

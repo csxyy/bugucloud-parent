@@ -2,11 +2,10 @@ package com.bugucloud.service.user;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.User;
-import com.bugucloud.core.vo.DashboardVO;
-import com.bugucloud.core.vo.UserDetailVO;
-import com.bugucloud.core.vo.UserInfoVO;
-import com.bugucloud.core.vo.UserSettingVO;
+import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.UserUpdateReq;
+
+import java.util.List;
 
 /**
  * 功能描述: 用户信息Service
@@ -18,19 +17,22 @@ import com.bugucloud.service.req.UserUpdateReq;
 public interface UserService extends IService<User> {
 
     /**
-     * 查询当前用户基本信息
-     * @param userId 用户ID
-     * @return 用户基本信息
-     */
-    UserInfoVO getUserInfo(Long userId);
-
-    /**
-     * 查询用户个人主页信息
+     * 查询用户个人主页信息（包含个人成就）
      * @param userId 目标用户ID
      * @param currentUserId 当前登录用户ID（可为null）
      * @return 用户详情
      */
     UserDetailVO getUserDetail(Long userId, Long currentUserId);
+
+    /**
+     * 查询用户的文章列表
+     * @param userId 用户ID
+     * @return 文章列表
+     */
+    List<UserArticleVO> getUserArticles(Long userId);
+
+
+    // ===================================== 个人中心 ========================================
 
     /**
      * 查询控制台信息
