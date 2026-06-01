@@ -102,7 +102,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         dashboard.setVipRemainingDays(calculateVipRemainingDays(user));
 
         // 4. 查询消息通知是否开启（查询email_notify状态）
-        dashboard.setNotificationEnabled(checkNotificationEnabled(user.getEmailNotify()));
+        dashboard.setEmailNotificationEnabled(checkNotificationEnabled(user.getEmailNotify()));
 
         return dashboard;
     }

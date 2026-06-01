@@ -58,7 +58,7 @@ public class UserController {
     @Operation(summary = "查询控制台信息")
     @GetMapping("/dashboard")
     public Result<DashboardVO> getDashboard() {
-        Long userId = 1001L;
+        Long userId = SecurityUtil.getCurrentUserId();
         DashboardVO dashboard = userService.getDashboard(userId);
         return Result.ok(dashboard);
     }
@@ -66,7 +66,7 @@ public class UserController {
     @Operation(summary = "查询用户设置信息")
     @GetMapping("/settings")
     public Result<UserSettingVO> getUserSettings() {
-        Long userId = 1001L;
+        Long userId = SecurityUtil.getCurrentUserId();
         UserSettingVO userSettings = userService.getUserSettings(userId);
         return Result.ok(userSettings);
     }
@@ -74,7 +74,7 @@ public class UserController {
     @Operation(summary = "更新用户设置信息")
     @PutMapping("/settings")
     public Result<Void> updateUserSettings(@Valid @RequestBody UserUpdateReq req) {
-        Long userId = 1001L;
+        Long userId = SecurityUtil.getCurrentUserId();
         userService.updateUserSettings(userId, req);
         return Result.ok();
     }

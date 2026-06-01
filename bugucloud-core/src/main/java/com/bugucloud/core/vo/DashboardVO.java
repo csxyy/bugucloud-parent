@@ -30,6 +30,6 @@ public class DashboardVO {
     /** 会员剩余天数（未过期时有效，已过期返回0） */
     private Long vipRemainingDays;
 
-    /** 消息通知是否开启 */
-    private Boolean notificationEnabled;
+    /** 消息邮件通知是否开启 */
+    private Boolean emailNotificationEnabled;
 }
