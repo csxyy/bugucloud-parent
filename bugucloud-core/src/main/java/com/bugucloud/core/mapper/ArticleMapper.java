@@ -56,9 +56,11 @@ public interface ArticleMapper extends BaseMapper<Article> {
     Long selectUserFollowed(@Param("authorId") Long authorId, @Param("userId") Long userId);
 
     /**
-     * 根据用户ID查询文章管理列表（包含所有状态的文章）
+     * 根据用户ID和条件查询文章管理列表
      */
-    List<ArticleManageVO> selectArticleManageListByUserId(@Param("userId") Long userId);
+    List<ArticleManageVO> selectArticleManageList(@Param("userId") Long userId,
+                                                  @Param("keyword") String keyword,
+                                                  @Param("isPublished") Integer isPublished);
 
     /**
      * 插入文章记录

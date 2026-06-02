@@ -49,11 +49,13 @@ public interface ArticleService extends IService<Article> {
     void likeOrCollectArticle(Long userId, ArticleLikeCollectReq req);
 
     /**
-     * 根据用户ID查询文章管理列表（包含所有状态）
-     * @param userId 用户ID
+     * 查询文章管理列表
+     * @param userId 当前用户ID
+     * @param keyword 搜索关键字（可为null）
+     * @param isPublished 发布状态（可为null）
      * @return 文章管理列表
      */
-    List<ArticleManageVO> getArticleManageListByUserId(Long userId);
+    List<ArticleManageVO> getArticleManageList(Long userId, String keyword, Integer isPublished);
 
     /**
      * 新增文章

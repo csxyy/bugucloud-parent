@@ -25,7 +25,7 @@ public class ArticleManageVO {
     /** 创建时间 */
     private LocalDateTime createTime;
 
-    /** 审核状态 0-审核中 1-审核通过 2-审核驳回 */
+    /** 审核状态 0-未提交 1-审核中 2-审核通过 3-审核驳回 */
     private Integer auditStatus;
 
     /** 发布状态 0-草稿 1-已发布 2-下架 */

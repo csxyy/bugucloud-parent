@@ -31,22 +31,36 @@
         ORDER BY a.sort DESC, a.create_time DESC
     </select>
 
-
-    <!-- 根据用户ID查询文章管理列表 -->
-    <select id="selectArticleManageListByUserId" resultType="com.bugucloud.core.vo.ArticleManageVO">
+    <!-- 根据用户ID查询查询文章管理列表 -->
+    <select id="selectArticleManageList" resultType="com.bugucloud.core.vo.ArticleManageVO">
         SELECT
-            a.id AS articleId,
-            a.title,
-            a.summary,
-            a.create_time AS createTime,
-            a.audit_status AS auditStatus,
-            a.is_published AS isPublished,
-            a.views,
-            a.likes,
-            a.comments,
-            a.collects
+        a.id AS articleId,
+        a.title,
+        a.summary,
+        a.create_time AS createTime,
+        a.audit_status AS auditStatus,
+        a.is_published AS isPublished,
+        a.views,
+        a.likes,
+        a.comments,
+        a.collects
         FROM t_article a
         WHERE a.user_id = #{userId}
+
+        <!-- 按发布状态筛选 -->
+        <if test="isPublished != null">
+            AND a.is_published = #{isPublished}
+        </if>
+
+        <!-- 按关键字搜索（标题或摘要） -->
+        <if test="keyword != null and keyword != ''">
+            AND (
+            a.title LIKE CONCAT('%', #{keyword}, '%')
+            OR
+            a.summary LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+
         ORDER BY a.create_time DESC
     </select>
 

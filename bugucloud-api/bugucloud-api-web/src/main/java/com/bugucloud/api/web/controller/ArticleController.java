@@ -80,11 +80,18 @@ public class ArticleController {
         return Result.ok();
     }
 
+    /**
+     * 查询文章管理列表
+     */
     @Operation(summary = "查询文章管理列表")
     @GetMapping("/manage")
-    public Result<List<ArticleManageVO>> getArticleManageList() {
+    public Result<List<ArticleManageVO>> getArticleManageList(
+            @Parameter(description = "搜索关键字（标题/摘要）")
+            @RequestParam(required = false) String keyword,
+            @Parameter(description = "发布状态 0-草稿 1-已发布 2-下架")
+            @RequestParam(required = false, name = "is_published") Integer isPublished) {
         Long userId = SecurityUtil.getCurrentUserId();
-        List<ArticleManageVO> list = articleService.getArticleManageListByUserId(userId);
+        List<ArticleManageVO> list = articleService.getArticleManageList(userId, keyword, isPublished);
         return Result.ok(list);
     }
 

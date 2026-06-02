@@ -1,7 +1,6 @@
 package com.bugucloud.service.article.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
@@ -14,11 +13,10 @@ import com.bugucloud.service.req.ArticleCreateReq;
 import com.bugucloud.service.req.ArticleLikeCollectReq;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DuplicateKeyException;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -193,10 +191,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
         }
     }
 
-
     @Override
-    public List<ArticleManageVO> getArticleManageListByUserId(Long userId) {
-        return articleMapper.selectArticleManageListByUserId(userId);
+    public List<ArticleManageVO> getArticleManageList(Long userId, String keyword, Integer isPublished) {
+        List<ArticleManageVO> list =
+                articleMapper.selectArticleManageList(userId, keyword, isPublished);
+        return list != null ? list : Collections.emptyList();
     }
 
     @Override
