@@ -2,8 +2,9 @@ package com.bugucloud.api.web.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bugucloud.common.result.Result;
+import com.bugucloud.common.util.SecurityUtil;
 import com.bugucloud.core.vo.CommentVO;
-import com.bugucloud.core.vo.MyCommentVO;
+import com.bugucloud.core.vo.MineCommentVO;
 import com.bugucloud.service.comment.CommentService;
 import com.bugucloud.service.req.CommentCreateReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -82,14 +83,15 @@ public class CommentController {
     /**
      * 管理后台-查询我的评论列表
      */
-    @GetMapping("/my")
     @Operation(summary = "查询我的评论列表")
-    public Result<IPage<MyCommentVO>> getMyComments(
-            @RequestParam(value = "query_type", required = false) Integer queryType,
-            @RequestParam(value = "page_num", defaultValue = "0") Integer pageNum,
-            @RequestParam(value = "page_size", defaultValue = "10") Integer pageSize) {
-        Long userId = 1001L;
-        IPage<MyCommentVO> pageResult = commentService.getMyComments(pageNum, pageSize, queryType, userId);
+    @GetMapping("/my-comments")
+    public Result<IPage<MineCommentVO>> getMyComments(
+            @Parameter(description = "页码")
+            @RequestParam(name = "page_num", defaultValue = "0") Integer pageNum,
+            @Parameter(description = "每页大小")
+            @RequestParam(name = "page_size", defaultValue = "10") Integer pageSize) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        IPage<MineCommentVO> pageResult = commentService.getMyComments(userId, pageNum, pageSize);
         return Result.ok(pageResult);
     }
 

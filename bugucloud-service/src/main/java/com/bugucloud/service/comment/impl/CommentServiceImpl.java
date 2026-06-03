@@ -9,7 +9,7 @@ import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.*;
 import com.bugucloud.core.mapper.*;
 import com.bugucloud.core.vo.CommentVO;
-import com.bugucloud.core.vo.MyCommentVO;
+import com.bugucloud.core.vo.MineCommentVO;
 import com.bugucloud.core.vo.SubCommentVO;
 import com.bugucloud.service.comment.CommentNotificationService;
 import com.bugucloud.service.comment.CommentService;
@@ -269,13 +269,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     }
 
     @Override
-    public IPage<MyCommentVO> getMyComments(Integer pageNum, Integer pageSize,
-                                            Integer queryType, Long userId) {
+    public IPage<MineCommentVO> getMyComments(Long userId, Integer pageNum, Integer pageSize) {
         // 创建分页对象
-        Page<MyCommentVO> page = new Page<>(pageNum, pageSize);
+        Page<MineCommentVO> page = new Page<>(pageNum, pageSize);
 
         // 查询我的评论列表
-        IPage<MyCommentVO> result = commentMapper.selectMyComments(page, userId, queryType);
+        IPage<MineCommentVO> result = commentMapper.selectMyComments(page, userId);
 
         return result;
     }

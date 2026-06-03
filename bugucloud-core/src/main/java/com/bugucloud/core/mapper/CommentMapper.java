@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bugucloud.core.entity.Comment;
 import com.bugucloud.core.vo.CommentVO;
-import com.bugucloud.core.vo.MyCommentVO;
+import com.bugucloud.core.vo.MineCommentVO;
 import com.bugucloud.core.vo.SubCommentVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -37,13 +37,10 @@ public interface CommentMapper extends BaseMapper<Comment> {
     int insertComment(Comment comment);
 
     /**
-     * 分页查询我的评论列表
+     * 分页查询别人评论我的文章列表
      * @param page 分页对象
-     * @param userId 当前用户ID
-     * @param queryType 查询类型：1-我评论的 2-评论我的 null/0-全部
+     * @param userId 当前用户ID（文章作者）
      * @return 分页结果
      */
-    IPage<MyCommentVO> selectMyComments(Page<MyCommentVO> page,
-                                        @Param("userId") Long userId,
-                                        @Param("queryType") Integer queryType);
+    IPage<MineCommentVO> selectMyComments(Page<MineCommentVO> page, @Param("userId") Long userId);
 }

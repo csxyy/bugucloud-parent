@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.Comment;
 import com.bugucloud.core.vo.CommentVO;
-import com.bugucloud.core.vo.MyCommentVO;
+import com.bugucloud.core.vo.MineCommentVO;
 import com.bugucloud.service.req.CommentCreateReq;
 
 import java.util.List;
@@ -45,13 +45,11 @@ public interface CommentService extends IService<Comment> {
     Boolean deleteComment(Long commentId, Long userId);
 
     /**
-     * 分页查询我的评论列表
+     * 分页查询别人评论我的文章列表
+     * @param userId 当前用户ID
      * @param pageNum 页码
      * @param pageSize 每页大小
-     * @param queryType 查询类型：null/0-全部 1-我评论的 2-评论我的
-     * @param userId 当前用户ID
      * @return 分页结果
      */
-    IPage<MyCommentVO> getMyComments(Integer pageNum, Integer pageSize,
-                                     Integer queryType, Long userId);
+    IPage<MineCommentVO> getMyComments(Long userId, Integer pageNum, Integer pageSize);
 }

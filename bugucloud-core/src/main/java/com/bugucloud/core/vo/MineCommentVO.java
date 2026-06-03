@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  * @date 2026/4/28 - 22:22
  */
 @Data
-public class MyCommentVO {
+public class MineCommentVO {
 
     /** 用户ID */
     private Long userId;
