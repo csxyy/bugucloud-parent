@@ -80,9 +80,10 @@ public class UserController {
     }
 
     @Operation(summary = "修改密码")
-    @PutMapping("/password")
+    @PutMapping("/change-password")
     public Result<Void> changePassword(@Valid @RequestBody ChangePasswordReq req) {
-
+        Long userId = SecurityUtil.getCurrentUserId();
+        userService.changePassword(userId, req);
         return Result.ok();
     }
 }

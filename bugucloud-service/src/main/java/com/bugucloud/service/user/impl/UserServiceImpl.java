@@ -6,10 +6,12 @@ import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.User;
 import com.bugucloud.core.mapper.UserMapper;
 import com.bugucloud.core.vo.*;
+import com.bugucloud.service.req.ChangePasswordReq;
 import com.bugucloud.service.req.UserUpdateReq;
 import com.bugucloud.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,6 +33,8 @@ import java.util.List;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private final UserMapper userMapper;
+
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetailVO getUserDetail(Long userId, Long currentUserId) {
@@ -205,5 +209,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } else {
             log.info("用户设置信息无变化，用户ID：{}", userId);
         }
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Long userId, ChangePasswordReq req) {
+        // 1. 校验新密码和确认密码是否一致
+        if (!req.getNewPassword().equals(req.getConfirmNewPassword())) {
+            throw new BusinessException("新密码和确认密码不一致");
+        }
+
+        // 2. 校验新密码和旧密码不能相同
+        if (req.getOldPassword().equals(req.getNewPassword())) {
+            throw new BusinessException("新密码不能与旧密码相同");
+        }
+
+        // 3. 查询用户
+        User user = userMapper.selectById(userId);
+        if (user == null || user.getStatus() != 1) {
+            throw new BusinessException("用户不存在或已被禁用");
+        }
+
+        // 4. 校验旧密码
+        if (!passwordEncoder.matches(req.getOldPassword(), user.getPassword())) {
+            throw new BusinessException("旧密码错误");
+        }
+
+        // 5. 更新密码
+        user.setPassword(passwordEncoder.encode(req.getNewPassword()));
+        userMapper.updateById(user);
+
+        // 6. 可选：清除该用户的所有Token，强制重新登录
+        // tokenService.logoutAllTokens(user.getUsername());
+
+        log.info("密码修改成功，用户ID：{}", userId);
     }
 }

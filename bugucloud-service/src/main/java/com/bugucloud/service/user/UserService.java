@@ -3,6 +3,7 @@ package com.bugucloud.service.user;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.User;
 import com.bugucloud.core.vo.*;
+import com.bugucloud.service.req.ChangePasswordReq;
 import com.bugucloud.service.req.UserUpdateReq;
 
 import java.util.List;
@@ -54,4 +55,12 @@ public interface UserService extends IService<User> {
      * @param req 更新请求
      */
     void updateUserSettings(Long userId, UserUpdateReq req);
+
+
+    /**
+     * 修改密码
+     * @param userId 当前用户ID
+     * @param req 修改密码请求
+     */
+    void changePassword(Long userId, ChangePasswordReq req);
 }
