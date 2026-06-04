@@ -60,13 +60,13 @@ public class FollowController {
 
     @Operation(summary = "关注/取消关注用户")
     @PutMapping("/{targetUserId}")
-    public Result<Boolean> toggleFollow(@Parameter(description = "被关注的用户id")
-                                     @PathVariable Long targetUserId,
-                                     @Parameter(description = "关注来源 1=博客 2=主页 3=粉丝列表")
-                                     @RequestParam Integer source) {
+    public Result<Void> toggleFollow(
+            @Parameter(description = "被关注的用户id") @PathVariable Long targetUserId,
+            @Parameter(description = "关注来源 1=博客 2=主页 3=粉丝列表")
+            @RequestParam(required = false, defaultValue = "1") Integer source) {
         Long currentUserId = SecurityUtil.getCurrentUserId();
-        Boolean isFollowed  = userFollowService.toggleFollow(currentUserId, targetUserId, source);
-        return Result.ok(isFollowed);
+        userFollowService.toggleFollow(currentUserId, targetUserId, source);
+        return Result.ok();
     }
 
     @Operation(summary = "求更新（1天1次）")

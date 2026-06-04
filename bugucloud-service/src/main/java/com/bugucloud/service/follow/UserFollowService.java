@@ -36,9 +36,8 @@ public interface UserFollowService extends IService<UserFollow> {
      * @param currentUserId 当前用户ID（关注者）
      * @param targetUserId 目标用户ID（被关注者）
      * @param source 关注来源 1=博客 2=主页 3=粉丝列表
-     * @return 当前关注状态 true=已关注 false=未关注
      */
-    Boolean toggleFollow(Long currentUserId, Long targetUserId, Integer source);
+    void toggleFollow(Long currentUserId, Long targetUserId, Integer source);
 
     /**
      * 求更新（1天1次）

@@ -66,7 +66,7 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean toggleFollow(Long currentUserId, Long targetUserId, Integer source) {
+    public void toggleFollow(Long currentUserId, Long targetUserId, Integer source) {
         // 1. 不能关注自己
         if (currentUserId.equals(targetUserId)) {
             throw new BusinessException("不能关注自己");
@@ -78,17 +78,15 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
             throw new BusinessException("目标用户不存在或已被禁用");
         }
 
-        // 3. 查询是否有关注记录（利用联合主键 user_id + followed_user_id）
+        // 3. 查询是否有关注记录
         UserFollow userFollow = userFollowMapper.selectOne(
                 new LambdaQueryWrapper<UserFollow>()
                         .eq(UserFollow::getUserId, currentUserId)
                         .eq(UserFollow::getFollowedUserId, targetUserId)
         );
 
-        boolean isFollowed;
-
         if (userFollow == null) {
-            // 4. 第一次操作：创建关注记录
+            // 4. 第一次关注：创建记录
             userFollow = new UserFollow();
             userFollow.setUserId(currentUserId);
             userFollow.setFollowedUserId(targetUserId);
@@ -96,10 +94,9 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
             userFollow.setIsCancel(0);
             userFollowMapper.insert(userFollow);
 
-            // 更新粉丝数和关注数 +1
-            updateFollowCount(targetUserId, currentUserId, true);
+            // 更新统计：关注者关注数+1，被关注者粉丝数+1
+            updateFollowStats(currentUserId, targetUserId, true);
 
-            isFollowed = true;
             log.info("关注成功，用户{}关注了用户{}", currentUserId, targetUserId);
         } else {
             // 5. 已有记录，切换关注状态
@@ -108,10 +105,9 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 userFollow.setIsCancel(1);
                 userFollowMapper.updateById(userFollow);
 
-                // 更新粉丝数和关注数 -1
-                updateFollowCount(targetUserId, currentUserId, false);
+                // 更新统计：关注者关注数-1，被关注者粉丝数-1
+                updateFollowStats(currentUserId, targetUserId, false);
 
-                isFollowed = false;
                 log.info("取消关注成功，用户{}取消关注用户{}", currentUserId, targetUserId);
             } else {
                 // 当前是取消状态 -> 重新关注
@@ -122,39 +118,74 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
                 }
                 userFollowMapper.updateById(userFollow);
 
-                // 更新粉丝数和关注数 +1
-                updateFollowCount(targetUserId, currentUserId, true);
+                // 更新统计：关注者关注数+1，被关注者粉丝数+1
+                updateFollowStats(currentUserId, targetUserId, true);
 
-                isFollowed = true;
                 log.info("重新关注成功，用户{}关注了用户{}", currentUserId, targetUserId);
             }
         }
-
-        return isFollowed;
     }
 
     /**
      * 更新关注/粉丝数统计
-     * @param targetUserId 被关注者ID
-     * @param currentUserId 关注者ID
+     * @param currentUserId 当前用户ID（关注者）
+     * @param targetUserId 目标用户ID（被关注者）
      * @param isFollow true=关注 false=取消关注
      */
-    private void updateFollowCount(Long targetUserId, Long currentUserId, boolean isFollow) {
-        // 更新被关注者的粉丝数
-        userStatMapper.update(null,
-                new LambdaUpdateWrapper<UserStat>()
-                        .eq(UserStat::getUserId, targetUserId)
-                        .setSql(isFollow ? "follower_count = follower_count + 1"
-                                : "follower_count = GREATEST(follower_count - 1, 0)")
+    private void updateFollowStats(Long currentUserId, Long targetUserId, boolean isFollow) {
+        // 1. 更新当前用户的关注数
+        updateUserStat(currentUserId, "follow_count", isFollow);
+
+        // 2. 更新目标用户的粉丝数
+        updateUserStat(targetUserId, "follower_count", isFollow);
+    }
+
+    /**
+     * 更新用户统计字段
+     * @param userId 用户ID
+     * @param field 统计字段名
+     * @param isIncrement true=增加 false=减少
+     */
+    private void updateUserStat(Long userId, String field, boolean isIncrement) {
+        // 先检查用户统计记录是否存在
+        UserStat userStat = userStatMapper.selectOne(
+                new LambdaQueryWrapper<UserStat>()
+                        .eq(UserStat::getUserId, userId)
         );
 
-        // 更新关注者的关注数
-        userStatMapper.update(null,
-                new LambdaUpdateWrapper<UserStat>()
-                        .eq(UserStat::getUserId, currentUserId)
-                        .setSql(isFollow ? "follow_count = follow_count + 1"
-                                : "follow_count = GREATEST(follow_count - 1, 0)")
-        );
+        if (userStat == null) {
+            // 如果统计记录不存在，创建新的
+            userStat = new UserStat();
+            userStat.setUserId(userId);
+            userStat.setTotalViews(0L);
+            userStat.setTotalArticles(0);
+            userStat.setTotalLikes(0);
+            userStat.setTotalCollects(0);
+            userStat.setTotalComments(0);
+            userStat.setTotalShares(0);
+            userStat.setFollowerCount(0);
+            userStat.setFollowCount(0);
+
+            // 根据字段设置初始值
+            if ("follow_count".equals(field) && isIncrement) {
+                userStat.setFollowCount(1);
+            } else if ("follower_count".equals(field) && isIncrement) {
+                userStat.setFollowerCount(1);
+            }
+
+            userStatMapper.insert(userStat);
+        } else {
+            // 更新统计
+            String sql = isIncrement ?
+                    field + " = " + field + " + 1" :
+                    field + " = GREATEST(" + field + " - 1, 0)";
+
+            userStatMapper.update(null,
+                    new LambdaUpdateWrapper<UserStat>()
+                            .eq(UserStat::getUserId, userId)
+                            .setSql(sql)
+            );
+        }
     }
 
 
