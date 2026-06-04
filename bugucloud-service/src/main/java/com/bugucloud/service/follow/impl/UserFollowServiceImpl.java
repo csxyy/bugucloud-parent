@@ -42,9 +42,20 @@ public class UserFollowServiceImpl extends ServiceImpl<UserFollowMapper, UserFol
     private final UserFollowRequestMapper userFollowRequestMapper;
 
     @Override
-    public List<FollowListVO> listMyFollowing(Long userId) {
-        List<FollowListVO> followingList = userFollowMapper.selectMyFollowing(userId);
-        return followingList != null ? followingList : Collections.emptyList();
+    public List<FollowListVO> listMyFollowing(Long userId, Integer followType, String keyword) {
+        // 默认查询用户关注
+        followType = followType != null ? followType : 1;
+
+        if (followType == 1) {
+            // 查询用户关注列表
+            List<FollowListVO> followingList = userFollowMapper.selectMyFollowing(userId, keyword);
+            return followingList != null ? followingList : Collections.emptyList();
+        } else if (followType == 2) {
+            // 课程模块正在开发中
+            throw new BusinessException("课程模块正在开发中，敬请期待");
+        } else {
+            throw new BusinessException("不支持的关注类型");
+        }
     }
 
     @Override

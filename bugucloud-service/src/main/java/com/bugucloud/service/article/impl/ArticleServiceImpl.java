@@ -146,12 +146,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
                 likeCollect.setMsgType(req.getMsgType());
                 likeCollect.setIsCancel(0);
 
-                // 冗余用户头像
-                User user = userMapper.selectById(userId);
-                if (user != null) {
-                    likeCollect.setUserAvatar(user.getAvatar());
-                }
-
                 articleLikeCollectMapper.insert(likeCollect);
 
                 // 异步更新统计

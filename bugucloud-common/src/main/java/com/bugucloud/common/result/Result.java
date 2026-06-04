@@ -46,6 +46,10 @@ public class Result<T> implements Serializable {
         return build(null, ResultCodeEnum.SYSTEM_ERROR);
     }
 
+    public static <T> Result<T> error(String message) {
+        return build(ResultCodeEnum.SYSTEM_ERROR.getCode(), message, null);
+    }
+
     public static <T> Result<T> error(ResultCodeEnum resultCodeEnum) {
         return build(null, resultCodeEnum);
     }

@@ -18,9 +18,11 @@ public interface UserFollowService extends IService<UserFollow> {
     /**
      * 查询我的关注列表
      * @param userId 当前用户ID
+     * @param followType 类型字段 用户/课程
+     * @param keyword 搜索关键字（可为null）
      * @return 关注列表
      */
-    List<FollowListVO> listMyFollowing(Long userId);
+    List<FollowListVO> listMyFollowing(Long userId, Integer followType, String keyword);
 
     /**
      * 查询我的粉丝列表

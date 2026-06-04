@@ -17,7 +17,7 @@ import java.util.List;
 public interface ArticleLikeCollectMapper extends BaseMapper<ArticleLikeCollect> {
 
     /**
-     * 查询赞和收藏消息列表（别人对我文章的操作）
+     * 查询别人对我的文章的点赞和收藏消息
      * @param userId 当前用户ID（文章作者）
      * @return 消息列表
      */

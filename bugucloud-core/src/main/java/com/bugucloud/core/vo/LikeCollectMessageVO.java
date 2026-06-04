@@ -21,6 +21,9 @@ public class LikeCollectMessageVO {
     /** 用户头像 */
     private String avatar;
 
+    /** 用户昵称 */
+    private String nickname;
+
     /** 文章ID */
     private Long articleId;
 

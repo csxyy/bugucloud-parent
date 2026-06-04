@@ -2,19 +2,22 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bugucloud.core.mapper.ArticleLikeCollectMapper">
 
-    <!-- 查询赞和收藏消息列表 -->
+    <!-- 查询别人对我的文章的点赞和收藏消息 -->
     <select id="selectLikeCollectMessages" resultType="com.bugucloud.core.vo.LikeCollectMessageVO">
         SELECT
             alc.user_id AS userId,
-            alc.user_avatar AS avatar,
+            u.avatar,
+            u.nickname,
             alc.article_id AS articleId,
             alc.article_title AS articleTitle,
             alc.msg_type AS msgType,
             alc.create_time AS createTime
         FROM t_article_like_collect alc
+                 INNER JOIN t_user u ON alc.user_id = u.id
         WHERE alc.target_user_id = #{userId}
-          AND alc.is_cancel = 0
           AND alc.user_id != #{userId}
+          AND alc.is_cancel = 0
+          AND u.status = 1
         ORDER BY alc.create_time DESC
     </select>
 

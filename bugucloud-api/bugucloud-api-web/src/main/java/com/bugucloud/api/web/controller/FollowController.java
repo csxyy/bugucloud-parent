@@ -1,6 +1,7 @@
 package com.bugucloud.api.web.controller;
 
 import com.bugucloud.common.result.Result;
+import com.bugucloud.common.util.SecurityUtil;
 import com.bugucloud.core.vo.FollowListVO;
 import com.bugucloud.core.vo.LikeCollectMessageVO;
 import com.bugucloud.service.article.ArticleLikeCollectService;
@@ -31,16 +32,20 @@ public class FollowController {
 
     @Operation(summary = "查询我的关注列表")
     @GetMapping("/following")
-    public Result<List<FollowListVO>> listMyFollowing() {
-        Long userId = 1003L;
-        List<FollowListVO> followingList = userFollowService.listMyFollowing(userId);
+    public Result<List<FollowListVO>> listMyFollowing(
+            @Parameter(description = "关注类型 1-用户 2-课程")
+            @RequestParam(name = "follow_type", required = false) Integer followType,
+            @Parameter(description = "搜索关键字（用户昵称）")
+            @RequestParam(required = false) String keyword) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        List<FollowListVO> followingList = userFollowService.listMyFollowing(userId, followType, keyword);
         return Result.ok(followingList);
     }
 
     @Operation(summary = "查询我的粉丝列表")
     @GetMapping("/followers")
     public Result<List<FollowListVO>> listMyFollowers() {
-        Long userId = 1005L;
+        Long userId = SecurityUtil.getCurrentUserId();
         List<FollowListVO> followersList = userFollowService.listMyFollowers(userId);
         return Result.ok(followersList);
     }
@@ -48,7 +53,7 @@ public class FollowController {
     @Operation(summary = "查询我的获赞和收藏消息")
     @GetMapping("/like-collect-messages")
     public Result<List<LikeCollectMessageVO>> listLikeCollectMessages() {
-        Long userId = 1001L;
+        Long userId = SecurityUtil.getCurrentUserId();
         List<LikeCollectMessageVO> messages = articleLikeCollectService.listLikeCollectMessages(userId);
         return Result.ok(messages);
     }
@@ -59,7 +64,7 @@ public class FollowController {
                                      @PathVariable Long targetUserId,
                                      @Parameter(description = "关注来源 1=博客 2=主页 3=粉丝列表")
                                      @RequestParam Integer source) {
-        Long currentUserId = 1001L;
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         Boolean isFollowed  = userFollowService.toggleFollow(currentUserId, targetUserId, source);
         return Result.ok(isFollowed);
     }
@@ -68,7 +73,7 @@ public class FollowController {
     @PutMapping("/request-update/{targetUserId}")
     public Result<Void> requestUpdate(@Parameter(description = "被求更新的用户id")
                                       @PathVariable Long targetUserId) {
-        Long currentUserId = 1001L;
+        Long currentUserId = SecurityUtil.getCurrentUserId();
         userFollowService.requestUpdate(currentUserId, targetUserId);
         return Result.ok();
     }

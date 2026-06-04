@@ -17,11 +17,13 @@ import java.util.List;
 public interface UserFollowMapper extends BaseMapper<UserFollow> {
 
     /**
-     * 查询我的关注列表（包含互关状态）
-     * @param userId 当前用户ID（我）
+     * 查询我的关注列表（用户）
+     * @param userId 当前用户ID
+     * @param keyword 搜索关键字（可为null）
      * @return 关注列表
      */
-    List<FollowListVO> selectMyFollowing(@Param("userId") Long userId);
+    List<FollowListVO> selectMyFollowing(@Param("userId") Long userId,
+                                         @Param("keyword") String keyword);
 
     /**
      * 查询我的粉丝列表（包含我是否关注了对方）
