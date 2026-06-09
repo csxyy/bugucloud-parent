@@ -8,8 +8,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.*;
 import com.bugucloud.core.mapper.*;
-import com.bugucloud.core.vo.CommentVO;
 import com.bugucloud.core.vo.MineCommentVO;
+import com.bugucloud.core.vo.ParentCommentVO;
 import com.bugucloud.core.vo.SubCommentVO;
 import com.bugucloud.service.comment.CommentNotificationService;
 import com.bugucloud.service.comment.CommentService;
@@ -19,8 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * 功能描述: 文章评论Service实现
@@ -41,40 +40,65 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
     private final CommentLikeMapper commentLikeMapper;
 
     @Override
-    public List<CommentVO> getCommentList(Long articleId, Long currentUserId) {
-        // 查询一级评论（包含子评论）
-        List<CommentVO> commentList = commentMapper.selectParentComments(articleId, currentUserId);
-
-        // 如果用户未登录，将所有isLiked设置为false
-        if (currentUserId == null) {
-            setDefaultLikedStatus(commentList);
+    public List<ParentCommentVO> getParentComments(Long articleId, Long currentUserId) {
+        // 1. 校验文章是否存在
+        Article article = articleMapper.selectById(articleId);
+        if (article == null) {
+            throw new BusinessException("文章不存在");
         }
 
-        return commentList != null ? commentList : Collections.emptyList();
+        // 2. 校验文章是否已删除（is_published=2表示下架/删除）
+        if (article.getIsPublished() == 2) {
+            throw new BusinessException("文章已下架");
+        }
+
+        // 3. 校验文章是否审核通过（如果需要的话）
+        if (article.getAuditStatus() != 1) {
+            throw new BusinessException("文章审核未通过，无法查看评论");
+        }
+
+        // 4. 查询一级评论列表
+        List<ParentCommentVO> parentComments = commentMapper.selectParentComments(articleId, currentUserId);
+        return parentComments != null ? parentComments : Collections.emptyList();
     }
 
-    /**
-     * 未登录用户，将所有点赞状态设置为false
-     */
-    private void setDefaultLikedStatus(List<CommentVO> commentList) {
-        if (commentList == null) {
-            return;
+    @Override
+    public List<SubCommentVO> getChildComments(Long rootId, Long currentUserId) {
+        // 1. 校验根评论是否存在
+        Comment rootComment = commentMapper.selectById(rootId);
+        if (rootComment == null) {
+            throw new BusinessException("评论不存在");
         }
 
-        for (CommentVO comment : commentList) {
-            comment.setIsLiked(false);
-
-            if (comment.getChildren() != null) {
-                for (SubCommentVO child : comment.getChildren()) {
-                    child.setIsLiked(false);
-                }
-            }
+        // 2. 校验根评论是否已删除
+        if (rootComment.getIsDeleted() == 1) {
+            throw new BusinessException("评论已删除");
         }
+
+        // 3. 校验根评论是否为一级评论（rootId对应的一级评论的root_id应该为0）
+        if (rootComment.getRootId() != 0) {
+            throw new BusinessException("只能查询一级评论的子评论");
+        }
+
+        // 4. 校验关联文章是否存在
+        Article article = articleMapper.selectById(rootComment.getArticleId());
+        if (article == null) {
+            throw new BusinessException("关联文章不存在");
+        }
+
+        // 5. 校验文章是否已下架
+        if (article.getIsPublished() == 2) {
+            throw new BusinessException("关联文章已下架");
+        }
+
+        // 6. 查询子评论
+        List<SubCommentVO> childComments = commentMapper.selectChildComments(rootId, currentUserId);
+        return childComments != null ? childComments : Collections.emptyList();
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Long createComment(CommentCreateReq req, Long userId) {
+    public void createComment(CommentCreateReq req, Long userId) {
         // 1. 查询文章信息（获取文章作者ID）
         Article article = articleMapper.selectById(req.getArticleId());
         if (article == null) {
@@ -90,27 +114,46 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             throw new BusinessException("用户不存在或已被禁用");
         }
 
-        // 3. 构建主评论实体
+        // 3. 获取rootId和parentId（默认0表示一级评论）
+        Long rootId = req.getRootId() != null ? req.getRootId() : 0L;
+        Long parentId = req.getParentId() != null ? req.getParentId() : 0L;
+
+        // 4. 如果是子评论，校验父评论
+        if (parentId != 0L) {
+            Comment parentComment = commentMapper.selectById(parentId);
+            if (parentComment == null || parentComment.getIsDeleted() == 1) {
+                throw new BusinessException("父评论不存在或已删除");
+            }
+
+            // 如果前端没传rootId，从父评论中获取
+            if (rootId == 0L) {
+                // 父评论是一级评论，rootId就是父评论ID
+                if (parentComment.getRootId() == 0) {
+                    rootId = parentComment.getId();
+                } else {
+                    // 父评论是子评论，rootId是父评论的rootId
+                    rootId = parentComment.getRootId();
+                }
+            }
+        }
+
+        // 5. 构建评论实体
         Comment comment = new Comment();
         comment.setArticleId(req.getArticleId());
         comment.setUserId(userId);
         comment.setNickname(user.getNickname());
         comment.setAvatar(user.getAvatar());
         comment.setContent(req.getContent());
+        comment.setRootId(rootId);
+        comment.setParentId(parentId);
         comment.setLikes(0);
+        comment.setSubCommentCount(0);
         comment.setIsDeleted(0);
 
-        // 4. 处理父评论ID（0表示一级评论）
-        Long parentId = req.getParentId() != null ? req.getParentId() : 0L;
-        comment.setParentId(parentId);
-
-        // 5. 处理回复逻辑
+        // 6. 处理回复逻辑
         if (parentId != 0L) {
-            // 查询父评论信息
+            // 查询父评论信息（已在第4步查询过，避免重复查询）
             Comment parentComment = commentMapper.selectById(parentId);
-            if (parentComment == null || parentComment.getIsDeleted() == 1) {
-                throw new BusinessException("父评论不存在或已删除");
-            }
 
             // 设置被回复用户信息
             Long replyUserId = req.getReplyUserId() != null ? req.getReplyUserId() : parentComment.getUserId();
@@ -126,23 +169,30 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
             comment.setReplyNickname(null);
         }
 
-        // 6. 插入评论
+        // 7. 插入评论
         int insertCount = commentMapper.insertComment(comment);
         if (insertCount <= 0) {
             throw new BusinessException("评论创建失败");
         }
 
-        // 7. 更新文章评论数
+        // 8. 更新一级评论的子评论数
+        if (rootId != 0L) {
+            commentMapper.update(null,
+                    new LambdaUpdateWrapper<Comment>()
+                            .eq(Comment::getId, rootId)
+                            .setSql("sub_comment_count = sub_comment_count + 1")
+            );
+        }
+
+        // 9. 更新文章评论数
         articleMapper.update(null,
                 new LambdaUpdateWrapper<Article>()
                         .eq(Article::getId, req.getArticleId())
                         .setSql("comments = comments + 1")
         );
 
-        // 8. 发送消息通知
-        commentNotificationService.sendCommentNotifications(comment, article, userId, parentId);
-
-        return comment.getId();
+        // TODO: 发送消息通知
+        // commentNotificationService.sendCommentNotifications(comment, article, userId, parentId);
     }
 
     @Override

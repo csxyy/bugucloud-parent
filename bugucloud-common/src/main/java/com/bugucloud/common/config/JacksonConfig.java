@@ -2,6 +2,8 @@ package com.bugucloud.common.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.PropertyNamingStrategies;
+import com.fasterxml.jackson.databind.module.SimpleModule;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
@@ -39,6 +41,15 @@ public class JacksonConfig {
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
             builder.deserializers(new LocalDateTimeDeserializer(
                     DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
+
+            // ========== 新增：解决 Long 类型传给前端精度丢失问题 ==========
+            SimpleModule longToStringModule = new SimpleModule();
+            // 将 Long 包装类序列化为 String
+            longToStringModule.addSerializer(Long.class, ToStringSerializer.instance);
+            // 将 long 基本类型序列化为 String
+            longToStringModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
+            // 注册模块
+            builder.modulesToInstall(longToStringModule);
         };
     }
 }

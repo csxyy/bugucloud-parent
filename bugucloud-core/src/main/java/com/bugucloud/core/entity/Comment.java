@@ -33,6 +33,10 @@ public class Comment extends BaseEntity {
     @TableField(value = "avatar")
     private String avatar;
 
+    @Schema(description = "根评论ID 0=一级评论")
+    @TableField(value = "root_id")
+    private Long rootId;
+
     @Schema(description = "父评论ID 0=一级评论")
     @TableField(value = "parent_id")
     private Long parentId;
@@ -52,6 +56,10 @@ public class Comment extends BaseEntity {
     @Schema(description = "评论点赞数")
     @TableField(value = "likes")
     private Integer likes;
+
+    @Schema(description = "子评论数量（仅一级评论维护）")
+    @TableField(value = "sub_comment_count")
+    private Integer subCommentCount;
 
     @Schema(description = "是否删除 0=正常 1=已删除")
     @TableField(value = "is_deleted")

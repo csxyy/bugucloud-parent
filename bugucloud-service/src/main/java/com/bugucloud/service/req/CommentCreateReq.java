@@ -19,6 +19,9 @@ public class CommentCreateReq {
     @Schema(description = "文章ID")
     private Long articleId;
 
+    @Schema(description = "根评论ID（0表示一级评论）")
+    private Long rootId;
+
     @Schema(description = "父评论ID（0表示一级评论）")
     private Long parentId;
 

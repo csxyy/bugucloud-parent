@@ -3,8 +3,9 @@ package com.bugucloud.api.web.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bugucloud.common.result.Result;
 import com.bugucloud.common.util.SecurityUtil;
-import com.bugucloud.core.vo.CommentVO;
 import com.bugucloud.core.vo.MineCommentVO;
+import com.bugucloud.core.vo.ParentCommentVO;
+import com.bugucloud.core.vo.SubCommentVO;
 import com.bugucloud.service.comment.CommentService;
 import com.bugucloud.service.req.CommentCreateReq;
 import io.swagger.v3.oas.annotations.Operation;
@@ -32,15 +33,27 @@ public class CommentController {
     private final CommentService commentService;
 
     /**
-     * 查询文章全部评论列表（包含嵌套子评论）
+     * 查询一级评论列表
      */
-    @GetMapping("/list/{articleId}")
-    @Operation(summary = "查询文章评论列表")
-    public Result<List<CommentVO>> getCommentList(
+    @Operation(summary = "查询一级评论列表")
+    @GetMapping("/parent/{articleId}")
+    public Result<List<ParentCommentVO>> getParentComments(
             @Parameter(description = "文章ID") @PathVariable Long articleId) {
-        Long currentUserId = 1001L;
-        List<CommentVO> commentList = commentService.getCommentList(articleId, currentUserId);
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        List<ParentCommentVO> commentList = commentService.getParentComments(articleId, currentUserId);
         return Result.ok(commentList);
+    }
+
+    /**
+     * 查询子评论列表
+     */
+    @Operation(summary = "查询子评论列表")
+    @GetMapping("/child/{rootId}")
+    public Result<List<SubCommentVO>> getChildComments(
+            @Parameter(description = "根评论ID（一级评论ID）") @PathVariable Long rootId) {
+        Long currentUserId = SecurityUtil.getCurrentUserId();
+        List<SubCommentVO> childCommentList = commentService.getChildComments(rootId, currentUserId);
+        return Result.ok(childCommentList);
     }
 
     /**
@@ -48,10 +61,10 @@ public class CommentController {
      */
     @PostMapping("/create")
     @Operation(summary = "创建/回复评论")
-    public Result<Long> createComment(@RequestBody @Valid CommentCreateReq req) {
-        Long userId = 1002L;
-        Long commentId = commentService.createComment(req, userId);
-        return Result.ok(commentId);
+    public Result<Void> createComment(@RequestBody @Valid CommentCreateReq req) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        commentService.createComment(req, userId);
+        return Result.ok();
     }
 
     /**
@@ -63,7 +76,7 @@ public class CommentController {
             @Parameter(description = "评论ID") @PathVariable Long commentId,
             @Parameter(description = "操作类型 true=点赞 false=取消点赞")
             @RequestParam(required = false, defaultValue = "true") Boolean isLike) {
-        Long userId = 1001L;
+        Long userId = SecurityUtil.getCurrentUserId();
         Boolean result = commentService.likeComment(commentId, userId, isLike);
         return Result.ok(result);
     }
@@ -75,7 +88,7 @@ public class CommentController {
     @Operation(summary = "删除评论")
     public Result<Boolean> deleteComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId) {
-        Long userId = 1002L;
+        Long userId = SecurityUtil.getCurrentUserId();
         Boolean result = commentService.deleteComment(commentId, userId);
         return Result.ok(result);
     }

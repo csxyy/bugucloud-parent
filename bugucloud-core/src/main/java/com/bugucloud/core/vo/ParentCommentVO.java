@@ -2,19 +2,21 @@ package com.bugucloud.core.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
 /**
- * 功能描述: 评论列表响应DTO
+ * 功能描述: 一级评论
  *
  * @author achen
  * @version 1.0
  * @date 2026/4/28 - 22:17
  */
 @Data
-public class CommentVO {
+public class ParentCommentVO {
+
     /** 评论ID */
     private Long id;
 
@@ -43,6 +45,6 @@ public class CommentVO {
     /** 是否点赞 */
     private Boolean isLiked;
 
-    /** 子评论列表 */
-    private List<SubCommentVO> children;
+    /** 子评论数 */
+    private Integer subCommentCount;
 }

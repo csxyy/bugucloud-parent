@@ -3,8 +3,9 @@ package com.bugucloud.service.comment;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.Comment;
-import com.bugucloud.core.vo.CommentVO;
 import com.bugucloud.core.vo.MineCommentVO;
+import com.bugucloud.core.vo.ParentCommentVO;
+import com.bugucloud.core.vo.SubCommentVO;
 import com.bugucloud.service.req.CommentCreateReq;
 
 import java.util.List;
@@ -18,14 +19,25 @@ import java.util.List;
  */
 public interface CommentService extends IService<Comment> {
     /**
-     * 查询文章评论列表（含嵌套子评论）
+     * 查询一级评论列表
+     * @param articleId 文章ID
+     * @param currentUserId 当前用户ID（可为null）
+     * @return 一级评论列表
      */
-    List<CommentVO> getCommentList(Long articleId, Long currentUserId);
+    List<ParentCommentVO> getParentComments(Long articleId, Long currentUserId);
+
+    /**
+     * 查询子评论列表
+     * @param rootId 根评论ID（一级评论ID）
+     * @param currentUserId 当前用户ID（可为null）
+     * @return 子评论列表
+     */
+    List<SubCommentVO> getChildComments(Long rootId, Long currentUserId);
 
     /**
      * 创建/回复评论
      */
-    Long createComment(CommentCreateReq req, Long userId);
+    void createComment(CommentCreateReq req, Long userId);
 
     /**
      * 点赞/取消点赞评论

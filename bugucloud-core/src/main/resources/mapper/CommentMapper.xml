@@ -2,45 +2,37 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bugucloud.core.mapper.CommentMapper">
 
-    <!-- 一级评论结果映射 -->
-    <resultMap id="ParentCommentMap" type="com.bugucloud.core.vo.CommentVO">
-        <id property="id" column="id"/>
-        <result property="userId" column="user_id"/>
-        <result property="avatar" column="avatar"/>
-        <result property="nickname" column="nickname"/>
-        <result property="createTime" column="create_time"/>
-        <result property="content" column="content"/>
-        <result property="isAuthor" column="is_author"/>
-        <result property="likes" column="likes"/>
-        <result property="isLiked" column="is_liked"/>
-        <collection property="children"
-                    ofType="com.bugucloud.core.vo.SubCommentVO"
-                    column="{parentId=id, currentUserId=current_user_id}"
-                    select="selectChildComments"/>
-    </resultMap>
-
     <!-- 查询一级评论列表 -->
-    <select id="selectParentComments" resultMap="ParentCommentMap">
+    <select id="selectParentComments" resultType="com.bugucloud.core.vo.ParentCommentVO">
         SELECT
         c.id,
-        c.user_id,
+        c.user_id AS userId,
         c.avatar,
         c.nickname,
-        c.create_time,
+        c.create_time AS createTime,
         c.content,
         c.likes,
+        c.sub_comment_count AS subCommentCount,
         <!-- 判断是否是文章作者 -->
-        CASE WHEN c.user_id = a.user_id THEN 1 ELSE 0 END AS is_author,
+        CASE WHEN c.user_id = a.user_id THEN 1 ELSE 0 END AS isAuthor,
         <!-- 判断当前用户是否点赞该评论 -->
-        CASE WHEN cl.id IS NOT NULL AND cl.is_cancel = 0 THEN 1 ELSE 0 END AS is_liked,
-        #{currentUserId} AS current_user_id
+        <choose>
+            <when test="currentUserId != null">
+                CASE WHEN cl.id IS NOT NULL AND cl.is_cancel = 0 THEN 1 ELSE 0 END AS isLiked
+            </when>
+            <otherwise>
+                0 AS isLiked
+            </otherwise>
+        </choose>
         FROM t_comment c
         INNER JOIN t_article a ON c.article_id = a.id
-        LEFT JOIN t_comment_like cl
-        ON c.id = cl.comment_id
-        AND cl.user_id = #{currentUserId}
+        <if test="currentUserId != null">
+            LEFT JOIN t_comment_like cl
+            ON c.id = cl.comment_id
+            AND cl.user_id = #{currentUserId}
+        </if>
         WHERE c.article_id = #{articleId}
-        AND c.parent_id = 0
+        AND c.root_id = 0
         AND c.is_deleted = 0
         ORDER BY c.create_time DESC
     </select>
@@ -49,24 +41,33 @@
     <select id="selectChildComments" resultType="com.bugucloud.core.vo.SubCommentVO">
         SELECT
         c.id,
-        c.user_id,
+        c.user_id AS userId,
         c.avatar,
         c.nickname,
-        c.reply_user_id,
-        c.reply_nickname,
-        c.create_time,
+        c.reply_user_id AS replyUserId,
+        c.reply_nickname AS replyUsername,
+        c.create_time AS createTime,
         c.content,
         c.likes,
         <!-- 判断是否是文章作者 -->
-        CASE WHEN c.user_id = a.user_id THEN 1 ELSE 0 END AS is_author,
+        CASE WHEN c.user_id = a.user_id THEN 1 ELSE 0 END AS isAuthor,
         <!-- 判断当前用户是否点赞该评论 -->
-        CASE WHEN cl.id IS NOT NULL AND cl.is_cancel = 0 THEN 1 ELSE 0 END AS is_liked
+        <choose>
+            <when test="currentUserId != null">
+                CASE WHEN cl.id IS NOT NULL AND cl.is_cancel = 0 THEN 1 ELSE 0 END AS isLiked
+            </when>
+            <otherwise>
+                0 AS isLiked
+            </otherwise>
+        </choose>
         FROM t_comment c
         INNER JOIN t_article a ON c.article_id = a.id
-        LEFT JOIN t_comment_like cl
-        ON c.id = cl.comment_id
-        AND cl.user_id = #{currentUserId}
-        WHERE c.parent_id = #{parentId}
+        <if test="currentUserId != null">
+            LEFT JOIN t_comment_like cl
+            ON c.id = cl.comment_id
+            AND cl.user_id = #{currentUserId}
+        </if>
+        WHERE c.root_id = #{rootId}
         AND c.is_deleted = 0
         ORDER BY c.create_time ASC
     </select>
@@ -79,29 +80,33 @@
             user_id,
             nickname,
             avatar,
+            root_id,
             parent_id,
             reply_user_id,
             reply_nickname,
             content,
             likes,
+            sub_comment_count,
             is_deleted,
             create_time,
             update_time
         ) VALUES (
-             #{id},
-             #{articleId},
-             #{userId},
-             #{nickname},
-             #{avatar},
-             #{parentId},
-             #{replyUserId},
-             #{replyNickname},
-             #{content},
-             0,
-             0,
-             NOW(),
-             NOW()
-         )
+                     #{id},
+                     #{articleId},
+                     #{userId},
+                     #{nickname},
+                     #{avatar},
+                     #{rootId},
+                     #{parentId},
+                     #{replyUserId},
+                     #{replyNickname},
+                     #{content},
+                     0,
+                     0,
+                     0,
+                     NOW(),
+                     NOW()
+                 )
     </insert>
 
     <!-- 分页查询别人评论我的文章列表 -->

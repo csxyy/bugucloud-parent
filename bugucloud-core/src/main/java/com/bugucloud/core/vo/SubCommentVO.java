@@ -1,12 +1,14 @@
 package com.bugucloud.core.vo;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 
 import java.time.LocalDateTime;
 
 /**
- * 功能描述: 子评论响应DTO
+ * 功能描述: 子评论
  *
  * @author achen
  * @version 1.0
@@ -14,6 +16,7 @@ import java.time.LocalDateTime;
  */
 @Data
 public class SubCommentVO {
+
     /** 评论ID */
     private Long id;
 
