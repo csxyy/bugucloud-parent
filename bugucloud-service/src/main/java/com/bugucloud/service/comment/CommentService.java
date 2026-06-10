@@ -40,21 +40,18 @@ public interface CommentService extends IService<Comment> {
     void createComment(CommentCreateReq req, Long userId);
 
     /**
-     * 点赞/取消点赞评论
-     * @param commentId 评论ID
-     * @param userId 用户ID
-     * @param isLike true=点赞 false=取消点赞
-     * @return 操作结果
-     */
-    Boolean likeComment(Long commentId, Long userId, Boolean isLike);
-
-    /**
-     * 删除评论（逻辑删除）
+     * 点赞/取消点赞评论（自动切换状态）
      * @param commentId 评论ID
      * @param userId 当前用户ID
-     * @return 操作结果
      */
-    Boolean deleteComment(Long commentId, Long userId);
+    void likeComment(Long commentId, Long userId);
+
+    /**
+     * 删除评论（一级评论级联删除子评论）
+     * @param commentId 评论ID
+     * @param userId 当前用户ID
+     */
+    void deleteComment(Long commentId, Long userId);
 
     /**
      * 分页查询别人评论我的文章列表

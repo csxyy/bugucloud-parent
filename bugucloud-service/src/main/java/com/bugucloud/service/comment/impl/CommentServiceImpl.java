@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 功能描述: 文章评论Service实现
@@ -197,7 +198,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean likeComment(Long commentId, Long userId, Boolean isLike) {
+    public void likeComment(Long commentId, Long userId) {
         // 1. 查询评论是否存在
         Comment comment = commentMapper.selectById(commentId);
         if (comment == null || comment.getIsDeleted() == 1) {
@@ -212,55 +213,37 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         );
 
         if (commentLike == null) {
-            // 3. 第一次操作
-            if (isLike) {
-                // 3.1 第一次点赞：创建记录
-                commentLike = new CommentLike();
-                commentLike.setUserId(userId);
-                commentLike.setCommentId(commentId);
+            // 3. 第一次操作：点赞
+            commentLike = new CommentLike();
+            commentLike.setUserId(userId);
+            commentLike.setCommentId(commentId);
+            commentLike.setIsCancel(0);
+            commentLikeMapper.insert(commentLike);
+
+            // 更新评论点赞数 +1
+            updateCommentLikes(commentId, 1);
+
+            log.info("点赞成功，用户{}点赞评论{}", userId, commentId);
+        } else {
+            // 4. 已有记录，自动切换状态
+            if (commentLike.getIsCancel() == 0) {
+                // 当前已点赞 -> 取消点赞
+                commentLike.setIsCancel(1);
+                commentLikeMapper.updateById(commentLike);
+
+                // 更新评论点赞数 -1
+                updateCommentLikes(commentId, -1);
+
+                log.info("取消点赞成功，用户{}取消点赞评论{}", userId, commentId);
+            } else {
+                // 当前已取消 -> 重新点赞
                 commentLike.setIsCancel(0);
-                commentLikeMapper.insert(commentLike);
+                commentLikeMapper.updateById(commentLike);
 
                 // 更新评论点赞数 +1
                 updateCommentLikes(commentId, 1);
 
-                return true;
-            } else {
-                // 3.2 第一次就取消点赞：无需操作
-                return false;
-            }
-        } else {
-            // 4. 已有记录，根据操作类型和当前状态处理
-            if (isLike) {
-                // 4.1 点赞操作
-                if (commentLike.getIsCancel() == 0) {
-                    // 已经点赞，无需操作
-                    return true;
-                } else {
-                    // 之前取消过，重新点赞：is_cancel = 0
-                    commentLike.setIsCancel(0);
-                    commentLikeMapper.updateById(commentLike);
-
-                    // 更新评论点赞数 +1
-                    updateCommentLikes(commentId, 1);
-
-                    return true;
-                }
-            } else {
-                // 4.2 取消点赞操作
-                if (commentLike.getIsCancel() == 1) {
-                    // 已经取消，无需操作
-                    return false;
-                } else {
-                    // 取消点赞：is_cancel = 1
-                    commentLike.setIsCancel(1);
-                    commentLikeMapper.updateById(commentLike);
-
-                    // 更新评论点赞数 -1
-                    updateCommentLikes(commentId, -1);
-
-                    return false;
-                }
+                log.info("重新点赞成功，用户{}点赞评论{}", userId, commentId);
             }
         }
     }
@@ -274,48 +257,112 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment> impl
         commentMapper.update(null,
                 new LambdaUpdateWrapper<Comment>()
                         .eq(Comment::getId, commentId)
-                        .setSql("likes = likes + " + delta)
+                        .setSql("likes = GREATEST(likes + " + delta + ", 0)")
         );
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteComment(Long commentId, Long userId) {
+    public void deleteComment(Long commentId, Long userId) {
         // 1. 查询评论是否存在
         Comment comment = commentMapper.selectById(commentId);
-        if (comment == null || comment.getIsDeleted() == 1) {
-            throw new BusinessException("评论不存在或已删除");
+        if (comment == null) {
+            throw new BusinessException("评论不存在");
         }
 
-        // 2. 权限校验：只能删除自己的评论
+        // 2. 校验评论是否已删除
+        if (comment.getIsDeleted() == 1) {
+            throw new BusinessException("评论已被删除");
+        }
+
+        // 3. 校验权限：只能删除自己的评论
         if (!comment.getUserId().equals(userId)) {
             throw new BusinessException("无权删除他人评论");
         }
 
-        // 3. 获取文章信息（用于后续更新评论数）
+        // 4. 校验文章是否存在
         Article article = articleMapper.selectById(comment.getArticleId());
         if (article == null) {
             throw new BusinessException("关联文章不存在");
         }
 
-        // 4. 逻辑删除评论
-        comment.setIsDeleted(1);
-        int updateCount = commentMapper.updateById(comment);
-        if (updateCount <= 0) {
-            throw new BusinessException("删除评论失败");
+        int deletedCount = 0;  // 删除的评论总数（包含子评论）
+
+        // 5. 判断是一级评论还是子评论
+        if (comment.getRootId() == 0) {
+            // 5.1 一级评论：逻辑删除自己 + 级联删除所有子评论
+            deletedCount = deleteParentComment(comment);
+        } else {
+            // 5.2 子评论：只逻辑删除自己
+            deletedCount = deleteChildComment(comment);
         }
 
-        // 5. 更新文章评论数 -1
-        // 如果是一级评论，直接减1；如果是子评论，也减1（文章总评论数包含所有评论）
+        // 6. 更新文章评论数
         articleMapper.update(null,
                 new LambdaUpdateWrapper<Article>()
                         .eq(Article::getId, comment.getArticleId())
-                        .setSql("comments = GREATEST(comments - 1, 0)")  // 防止负数
+                        .setSql("comments = GREATEST(comments - " + deletedCount + ", 0)")
         );
 
-        log.info("评论删除成功，评论ID：{}，用户ID：{}，文章ID：{}", commentId, userId, comment.getArticleId());
+        log.info("评论删除成功，评论ID：{}，用户ID：{}，删除数量：{}", commentId, userId, deletedCount);
+    }
 
-        return true;
+    /**
+     * 删除一级评论（级联删除所有子评论）
+     * @param parentComment 一级评论
+     * @return 删除的评论总数
+     */
+    private int deleteParentComment(Comment parentComment) {
+        int count = 1; // 一级评论自己
+
+        // 1. 查询所有未删除的子评论
+        List<Comment> childComments = commentMapper.selectList(
+                new LambdaQueryWrapper<Comment>()
+                        .eq(Comment::getRootId, parentComment.getId())
+                        .eq(Comment::getIsDeleted, 0)
+        );
+
+        // 2. 批量逻辑删除子评论
+        if (childComments != null && !childComments.isEmpty()) {
+            List<Long> childIds = childComments.stream()
+                    .map(Comment::getId)
+                    .collect(Collectors.toList());
+
+            commentMapper.update(null,
+                    new LambdaUpdateWrapper<Comment>()
+                            .in(Comment::getId, childIds)
+                            .set(Comment::getIsDeleted, 1)
+            );
+
+            count += childComments.size();
+        }
+
+        // 3. 逻辑删除一级评论
+        parentComment.setIsDeleted(1);
+        commentMapper.updateById(parentComment);
+
+        return count;
+    }
+
+    /**
+     * 删除子评论（只删除自己）
+     * @param childComment 子评论
+     * @return 删除的评论总数
+     */
+    private int deleteChildComment(Comment childComment) {
+        // 1. 逻辑删除子评论
+        childComment.setIsDeleted(1);
+        commentMapper.updateById(childComment);
+
+        // 2. 更新父评论的子评论数
+        Long rootId = childComment.getRootId();
+        commentMapper.update(null,
+                new LambdaUpdateWrapper<Comment>()
+                        .eq(Comment::getId, rootId)
+                        .setSql("sub_comment_count = GREATEST(sub_comment_count - 1, 0)")
+        );
+
+        return 1;
     }
 
     @Override

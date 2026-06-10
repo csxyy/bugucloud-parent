@@ -72,13 +72,11 @@ public class CommentController {
      */
     @PostMapping("/like/{commentId}")
     @Operation(summary = "点赞/取消点赞评论")
-    public Result<Boolean> likeComment(
-            @Parameter(description = "评论ID") @PathVariable Long commentId,
-            @Parameter(description = "操作类型 true=点赞 false=取消点赞")
-            @RequestParam(required = false, defaultValue = "true") Boolean isLike) {
+    public Result<Void> likeComment(
+            @Parameter(description = "评论ID") @PathVariable Long commentId) {
         Long userId = SecurityUtil.getCurrentUserId();
-        Boolean result = commentService.likeComment(commentId, userId, isLike);
-        return Result.ok(result);
+        commentService.likeComment(commentId, userId);
+        return Result.ok();
     }
 
     /**
@@ -86,11 +84,11 @@ public class CommentController {
      */
     @DeleteMapping("/{commentId}")
     @Operation(summary = "删除评论")
-    public Result<Boolean> deleteComment(
+    public Result<Void> deleteComment(
             @Parameter(description = "评论ID") @PathVariable Long commentId) {
         Long userId = SecurityUtil.getCurrentUserId();
-        Boolean result = commentService.deleteComment(commentId, userId);
-        return Result.ok(result);
+        commentService.deleteComment(commentId, userId);
+        return Result.ok();
     }
 
     /**
