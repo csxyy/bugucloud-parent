@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bugucloud.core.mapper.NewsMapper">
-    <!-- 查询资讯列表 -->
-    <select id="selectNewsList" resultType="com.bugucloud.core.vo.NewsItemVO">
+    <!-- 分页查询资讯列表 -->
+    <select id="selectNewsPage" resultType="com.bugucloud.core.vo.NewsItemVO">
         SELECT
             id,
             title,

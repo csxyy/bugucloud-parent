@@ -1,5 +1,6 @@
 package com.bugucloud.service.news;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.News;
 import com.bugucloud.core.vo.NewsDetailVO;
@@ -18,9 +19,12 @@ public interface NewsService extends IService<News> {
 
 
     /**
-     * 查询资讯列表
+     * 分页查询资讯列表
+     * @param pageNum 页码
+     * @param pageSize 每页大小
+     * @return 分页结果
      */
-    List<NewsItemVO> listNews();
+    IPage<NewsItemVO> listNews(Integer pageNum, Integer pageSize);
 
     /**
      * 查询资讯详情

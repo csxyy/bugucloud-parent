@@ -1,5 +1,6 @@
 package com.bugucloud.api.web.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bugucloud.common.result.Result;
 import com.bugucloud.core.vo.NewsDetailVO;
 import com.bugucloud.core.vo.NewsItemVO;
@@ -27,11 +28,18 @@ public class NewsController {
 
     private final NewsService newsService;
 
-    @Operation(summary = "查询资讯列表")
+    /**
+     * 分页查询资讯列表
+     */
+    @Operation(summary = "分页查询资讯列表")
     @GetMapping("/list")
-    public Result<List<NewsItemVO>> listNews() {
-        List<NewsItemVO> newsList = newsService.listNews();
-        return Result.ok(newsList);
+    public Result<IPage<NewsItemVO>> listNews(
+            @Parameter(description = "页码")
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页大小")
+            @RequestParam(defaultValue = "8") Integer pageSize) {
+        IPage<NewsItemVO> newsPage = newsService.listNews(pageNum, pageSize);
+        return Result.ok(newsPage);
     }
 
     @Operation(summary = "查询单个资讯详情")

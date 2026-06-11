@@ -1,5 +1,7 @@
 package com.bugucloud.service.news.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.News;
@@ -27,9 +29,14 @@ public class NewsServiceImpl extends ServiceImpl<NewsMapper, News> implements Ne
     private final NewsMapper newsMapper;
 
     @Override
-    public List<NewsItemVO> listNews() {
-        List<NewsItemVO> newsList = newsMapper.selectNewsList();
-        return newsList != null ? newsList : Collections.emptyList();
+    public IPage<NewsItemVO> listNews(Integer pageNum, Integer pageSize) {
+        // 创建分页对象
+        Page<NewsItemVO> page = new Page<>(pageNum, pageSize);
+
+        // 分页查询
+        IPage<NewsItemVO> newsPage = newsMapper.selectNewsPage(page);
+
+        return newsPage;
     }
 
     @Override
