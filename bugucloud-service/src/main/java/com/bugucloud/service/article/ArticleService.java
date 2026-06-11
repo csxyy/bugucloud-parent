@@ -1,5 +1,6 @@
 package com.bugucloud.service.article;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.bugucloud.core.entity.Article;
 import com.bugucloud.core.vo.*;
@@ -18,11 +19,13 @@ import java.util.List;
 public interface ArticleService extends IService<Article> {
 
     /**
-     * 根据标签ID查询文章列表
-     * @param tagId 标签ID（为null时查询全部已发布文章）
-     * @return 文章列表
+     * 根据标签ID分页查询文章列表
+     * @param tagId 标签ID（可为null）
+     * @param pageNum 页码
+     * @param pageSize 每页大小
+     * @return 分页结果
      */
-    List<ArticleItemVO> getArticleListByTagId(Long tagId);
+    IPage<ArticleItemVO> getArticleListByTagId(Long tagId, Integer pageNum, Integer pageSize);
 
     /**
      * 获取文章核心内容（包含标签、底部栏作者简要信息）

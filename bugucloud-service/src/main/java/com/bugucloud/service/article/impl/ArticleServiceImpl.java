@@ -1,7 +1,9 @@
 package com.bugucloud.service.article.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.core.entity.*;
@@ -46,8 +48,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article> impl
 
 
     @Override
-    public List<ArticleItemVO> getArticleListByTagId(Long tagId) {
-        return articleMapper.selectArticleListByTagId(tagId);
+    public IPage<ArticleItemVO> getArticleListByTagId(Long tagId, Integer pageNum, Integer pageSize) {
+        // 创建分页对象，默认pageNum=1, pageSize=8
+        Page<ArticleItemVO> page = new Page<>(pageNum, pageSize);
+
+        // 分页查询
+        IPage<ArticleItemVO> result = articleMapper.selectArticleListByTagId(page, tagId);
+
+        return result;
     }
 
     // ========== 接口1：文章核心内容 ==========

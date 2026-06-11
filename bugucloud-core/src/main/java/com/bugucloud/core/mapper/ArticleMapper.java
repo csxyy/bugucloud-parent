@@ -1,6 +1,8 @@
 package com.bugucloud.core.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.bugucloud.core.entity.Article;
 import com.bugucloud.core.entity.ArticleTag;
 import com.bugucloud.core.vo.ArticleItemVO;
@@ -21,9 +23,13 @@ import java.util.List;
 public interface ArticleMapper extends BaseMapper<Article> {
 
     /**
-     * 根据标签ID查询文章列表（tagId为null时查询全部）
+     * 根据标签ID分页查询文章列表
+     * @param page 分页对象
+     * @param tagId 标签ID（可为null）
+     * @return 分页结果
      */
-    List<ArticleItemVO> selectArticleListByTagId(@Param("tagId") Long tagId);
+    IPage<ArticleItemVO> selectArticleListByTagId(Page<ArticleItemVO> page,
+                                                  @Param("tagId") Long tagId);
 
     /**
      * 根据文章ID查询作者ID

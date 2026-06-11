@@ -1,5 +1,6 @@
 package com.bugucloud.api.web.controller;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.bugucloud.common.util.SecurityUtil;
 import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.ArticleCreateReq;
@@ -31,13 +32,20 @@ public class ArticleController {
     private final ArticleService articleService;
 
 
+    /**
+     * 根据标签ID分页查询文章列表
+     */
     @Operation(summary = "根据标签ID查询文章列表")
     @GetMapping("/list")
-    public Result<List<ArticleItemVO>> getArticleListByTagId(
+    public Result<IPage<ArticleItemVO>> getArticleListByTagId(
             @Parameter(description = "标签ID", allowEmptyValue = true)
-            @RequestParam(name = "tag_id", required = false) Long tagId) {
-        List<ArticleItemVO> list = articleService.getArticleListByTagId(tagId);
-        return Result.ok(list);
+            @RequestParam(name = "tag_id", required = false) Long tagId,
+            @Parameter(description = "页码")
+            @RequestParam(defaultValue = "1") Integer pageNum,
+            @Parameter(description = "每页大小")
+            @RequestParam(defaultValue = "8") Integer pageSize) {
+        IPage<ArticleItemVO> page = articleService.getArticleListByTagId(tagId, pageNum, pageSize);
+        return Result.ok(page);
     }
 
     // ======================= 文章详情页 ==========================

@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.bugucloud.core.mapper.ArticleMapper">
 
-    <!-- 根据标签ID查询文章列表 -->
+    <!-- 根据标签ID分页查询文章列表 -->
     <select id="selectArticleListByTagId" resultType="com.bugucloud.core.vo.ArticleItemVO">
         SELECT
         u.id AS userId,
@@ -16,7 +16,7 @@
         a.likes,
         a.collects
         FROM t_article a
-        INNER JOIN `t_user` u ON a.user_id = u.id
+        INNER JOIN t_user u ON a.user_id = u.id
 
         <!-- 如果传了tagId，则关联标签表进行过滤 -->
         <if test="tagId != null">
