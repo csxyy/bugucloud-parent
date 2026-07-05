@@ -26,6 +26,13 @@ public interface UserService extends IService<User> {
     UserDetailVO getUserDetail(Long userId, Long currentUserId);
 
     /**
+     * 更新用户头像
+     * @param userId 用户ID
+     * @param avatarUrl 头像URL
+     */
+    void updateAvatar(Long userId, String avatarUrl);
+
+    /**
      * 查询用户的文章列表
      * @param userId 用户ID
      * @return 文章列表

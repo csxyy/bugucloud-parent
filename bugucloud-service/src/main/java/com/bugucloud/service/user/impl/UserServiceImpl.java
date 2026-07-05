@@ -82,6 +82,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void updateAvatar(Long userId, String avatarUrl) {
+        User user = new User();
+        user.setId(userId);
+        user.setAvatar(avatarUrl);
+        boolean updated = updateById(user);
+        if (!updated) {
+            log.error("更新用户头像失败, 用户ID: {}", userId);
+            throw new RuntimeException("更新用户头像失败");
+        }
+        log.info("更新用户头像成功, 用户ID: {}, URL: {}", userId, avatarUrl);
+    }
+
+    @Override
     public List<UserArticleVO> getUserArticles(Long userId) {
         List<UserArticleVO> articles = userMapper.selectUserArticles(userId);
         return articles != null ? articles : Collections.emptyList();

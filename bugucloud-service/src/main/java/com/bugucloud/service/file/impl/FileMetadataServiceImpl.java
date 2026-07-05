@@ -10,6 +10,7 @@ import com.bugucloud.common.util.SecurityUtil;
 import com.bugucloud.core.entity.FileMetadata;
 import com.bugucloud.core.mapper.FileMetadataMapper;
 import com.bugucloud.service.file.FileMetadataService;
+import com.bugucloud.service.user.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,8 @@ public class FileMetadataServiceImpl extends ServiceImpl<FileMetadataMapper, Fil
 
     private final OssUtil ossUtil;
 
+    private final UserService userService;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String uploadFile(FileTypeEnum fileType, Long relatedId, Long uploaderId, MultipartFile file) throws IOException {
@@ -52,6 +55,12 @@ public class FileMetadataServiceImpl extends ServiceImpl<FileMetadataMapper, Fil
         // 4. 保存文件元数据到数据库
         FileMetadata metadata = buildFileMetadata(ossKey, fileUrl, file, fileType, relatedId, uploaderId);
         save(metadata);
+
+        // 5. 如果是用户头像，同步更新用户表的 avatar 字段
+        if (fileType == FileTypeEnum.USER_AVATAR) {
+            userService.updateAvatar(uploaderId, fileUrl);
+            log.info("用户头像更新成功, 用户ID: {}, URL: {}", uploaderId, fileUrl);
+        }
 
         log.info("文件上传成功, 类型: {}, 关联ID: {}, 上传者: {}, OSS路径: {}, URL: {}",
                 fileType.getDesc(), relatedId, uploaderId, ossKey, fileUrl);
