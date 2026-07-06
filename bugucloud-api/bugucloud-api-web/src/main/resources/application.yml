@@ -16,6 +16,9 @@ mybatis-plus:
 #      logic-delete-field: is_deleted  # 逻辑删除字段名
 #      logic-delete-value: 1  # 已删除
 #      logic-not-delete-value: 0  # 未删除
+    # 默认枚举处理器，自动将枚举的 @EnumValue 字段与数据库映射
+    default-enum-type-handler: com.baomidou.mybatisplus.core.handlers.MybatisEnumTypeHandler
+  type-enums-package: com.bugucloud.common.enums  # 扫描枚举包
 
 # 修改控制台日志输出格式
 logging:

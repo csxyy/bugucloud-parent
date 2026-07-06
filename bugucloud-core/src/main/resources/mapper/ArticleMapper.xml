@@ -37,6 +37,7 @@
         a.id AS articleId,
         a.title,
         a.summary,
+        a.cover,
         a.create_time AS createTime,
         a.audit_status AS auditStatus,
         a.is_published AS isPublished,
@@ -112,4 +113,73 @@
             )
         </foreach>
     </insert>
+
+    <!-- 更新文章记录 -->
+    <update id="updateArticle" parameterType="com.bugucloud.core.entity.Article">
+        UPDATE t_article
+        SET title = #{title},
+            summary = #{summary},
+            cover = #{cover},
+            content = #{content},
+            is_published = #{isPublished},
+            audit_status = #{auditStatus},
+            update_time = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 删除文章所有标签关联 -->
+    <delete id="deleteArticleTags">
+        DELETE FROM t_article_tag WHERE article_id = #{articleId}
+    </delete>
+
+    <select id="selectArticleEditById" resultMap="ArticleEditVOMap">
+        SELECT
+            a.id AS article_id,
+            a.title,
+            a.content,
+            a.summary,
+            a.cover,
+            a.user_id,
+            t.id AS tag_id,
+            t.name AS tag_name
+        FROM t_article a
+                 LEFT JOIN t_article_tag atg ON a.id = atg.article_id
+                 LEFT JOIN t_tag t ON atg.tag_id = t.id
+        WHERE a.id = #{articleId}
+    </select>
+    <!-- 查询编辑文章数据 -->
+    <resultMap id="ArticleEditVOMap" type="com.bugucloud.core.vo.ArticleEditVO">
+        <id property="articleId" column="article_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="summary" column="summary"/>
+        <result property="cover" column="cover"/>
+        <result property="userId" column="user_id"/>
+
+        <!-- 标签集合：使用 collection 进行嵌套映射 -->
+        <collection property="tags" ofType="com.bugucloud.core.vo.TagVO">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+    <!-- 编辑文章结果映射 -->
+    <resultMap id="ArticleEditMap" type="com.bugucloud.core.vo.ArticleEditVO">
+        <id property="articleId" column="article_id"/>
+        <result property="title" column="title"/>
+        <result property="content" column="content"/>
+        <result property="summary" column="summary"/>
+        <result property="cover" column="cover"/>
+        <result property="userId" column="user_id"/>
+        <collection property="tags" ofType="com.bugucloud.core.vo.TagVO">
+            <id property="id" column="tag_id"/>
+            <result property="name" column="tag_name"/>
+        </collection>
+    </resultMap>
+
+
+    <!-- 删除文章 -->
+    <delete id="deleteArticle">
+        DELETE FROM t_article WHERE id = #{articleId}
+    </delete>
 </mapper>

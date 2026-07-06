@@ -98,9 +98,9 @@ public class CommentController {
     @GetMapping("/my-comments")
     public Result<IPage<MineCommentVO>> getMyComments(
             @Parameter(description = "页码")
-            @RequestParam(name = "page_num", defaultValue = "0") Integer pageNum,
+            @RequestParam(name = "page_num", defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页大小")
-            @RequestParam(name = "page_size", defaultValue = "10") Integer pageSize) {
+            @RequestParam(name = "page_size", defaultValue = "8") Integer pageSize) {
         Long userId = SecurityUtil.getCurrentUserId();
         IPage<MineCommentVO> pageResult = commentService.getMyComments(userId, pageNum, pageSize);
         return Result.ok(pageResult);

@@ -26,8 +26,8 @@ public class JwtUtils {
             "YourSuperSecretKeyForJWTWhichMustBeLongEnoughForHS256!".getBytes()
     );
 
-    private static final long ACCESS_EXPIRATION_MS = 3 * 60 * 1000; // 15 分钟
-    private static final long REFRESH_EXPIRATION_MS = 30L * 24 * 60 * 60 * 1000; // 30 天
+    private static final long ACCESS_EXPIRATION_MS = 15 * 60 * 1000L; // 15 分钟
+    private static final long REFRESH_EXPIRATION_MS = 30 * 24 * 60 * 60 * 1000L; // 30 天
 
     // ==================== 生成 Access Token ====================
     public String generateAccessToken(Long userId) {

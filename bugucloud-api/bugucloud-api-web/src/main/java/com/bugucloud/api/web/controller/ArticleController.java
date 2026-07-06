@@ -1,6 +1,7 @@
 package com.bugucloud.api.web.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.bugucloud.common.exception.BusinessException;
 import com.bugucloud.common.util.SecurityUtil;
 import com.bugucloud.core.vo.*;
 import com.bugucloud.service.req.ArticleCreateReq;
@@ -54,7 +55,8 @@ public class ArticleController {
     @GetMapping("/detail/{articleId}/content")
     public Result<ArticleContentVO> getArticleContent(
             @Parameter(description = "文章ID") @PathVariable Long articleId) {
-        ArticleContentVO vo = articleService.getArticleContent(articleId);
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArticleContentVO vo = articleService.getArticleContent(articleId, userId);
         return Result.ok(vo);
     }
 
@@ -63,7 +65,8 @@ public class ArticleController {
     @GetMapping("/detail/{articleId}/author")
     public Result<ArticleAuthorDetailVO> getArticleAuthor(
             @Parameter(description = "文章ID") @PathVariable Long articleId) {
-        ArticleAuthorDetailVO vo = articleService.getArticleAuthor(articleId);
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArticleAuthorDetailVO vo = articleService.getArticleAuthor(articleId, userId);
         return Result.ok(vo);
     }
 
@@ -103,11 +106,43 @@ public class ArticleController {
         return Result.ok(list);
     }
 
-    @Operation(summary = "新增文章")
+    @Operation(summary = "新增/更新文章")
     @PostMapping("/create")
     public Result<Void> createArticle(@RequestBody @Valid ArticleCreateReq request) {
         Long userId = SecurityUtil.getCurrentUserId();
-        articleService.createArticle(request, userId);
+        articleService.saveOrUpdateArticle(request, userId);
         return Result.ok();
     }
+
+    /**
+     * 查询文章编辑数据
+     */
+    @Operation(summary = "查询文章编辑数据")
+    @GetMapping("/edit/{articleId}")
+    public Result<ArticleEditVO> getArticleEditById(
+            @Parameter(description = "文章ID") @PathVariable Long articleId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        ArticleEditVO articleEdit = articleService.getArticleEditById(articleId);
+
+        // 校验是否是自己的文章
+        // 如果需要权限校验，可以在Service层做
+         if (!articleEdit.getUserId().equals(userId)) {
+             throw new BusinessException("无权编辑他人文章");
+         }
+
+        return Result.ok(articleEdit);
+    }
+
+    /**
+     * 删除文章
+     */
+    @Operation(summary = "删除文章")
+    @DeleteMapping("/{articleId}")
+    public Result<Void> deleteArticle(
+            @Parameter(description = "文章ID") @PathVariable Long articleId) {
+        Long userId = SecurityUtil.getCurrentUserId();
+        articleService.deleteArticle(articleId, userId);
+        return Result.ok();
+    }
+
 }

@@ -7,7 +7,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * 功能描述: 创建文章请求
+ * 功能描述: 创建/更新文章请求
  *
  * @author achen
  * @version 1.0
@@ -15,8 +15,11 @@ import java.util.List;
  */
 
 @Data
-@Schema(description = "创建文章请求")
+@Schema(description = "创建/更新文章请求")
 public class ArticleCreateReq {
+
+    @Schema(description = "文章ID（更新时传，新增时不传）")
+    private Long articleId;
 
     @NotBlank(message = "文章标题不能为空")
     @Size(max = 200, message = "文章标题长度不能超过200位")

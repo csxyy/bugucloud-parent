@@ -34,9 +34,11 @@ public class FileController {
     public Result<String> uploadFile(
             @Parameter(description = "文件", required = true)
             @RequestParam("file") MultipartFile file,
-            @Parameter(description = "文件类型：1-文章配图，2-用户头像，3-资讯图片", required = true)
+
+            @Parameter(description = "文件类型：1-文章配图，2-用户头像，3-资讯图片，4-文章封面", required = true)
             @RequestParam("fileType") Integer fileTypeCode,
-            @Parameter(description = "关联的业务ID（文章ID/资讯ID），用户头像时可不传")
+
+            @Parameter(description = "关联的业务ID（文章配图/资讯图片必传，用户头像/文章封面可不传）")
             @RequestParam(value = "relatedId", required = false) Long relatedId) {
 
         // 1. 参数校验
@@ -44,7 +46,7 @@ public class FileController {
             return Result.error("文件不能为空");
         }
 
-        // 2. 获取当前用户ID（一开始就获取）
+        // 2. 获取当前用户ID
         Long userId = SecurityUtil.getCurrentUserId();
 
         // 3. 根据数字获取枚举
@@ -57,14 +59,18 @@ public class FileController {
         }
 
         // 4. 处理 relatedId
-        // 如果是用户头像，使用当前用户ID作为 relatedId
         if (fileType == FileTypeEnum.USER_AVATAR) {
+            // 用户头像：使用当前用户ID
             relatedId = userId;
             log.info("上传用户头像，用户ID: {}", userId);
+        } else if (fileType == FileTypeEnum.ARTICLE_COVER) {
+            // 文章封面：不需要传 relatedId，由 Service 层自动生成
+            // relatedId 保持 null，Service 层会生成雪花ID
+            log.info("上传文章封面，用户ID: {}", userId);
         } else {
-            // 文章或资讯图片，必须传 relatedId
+            // 文章配图或资讯图片：必须传 relatedId
             if (relatedId == null) {
-                return Result.error("文章/资讯图片必须传入关联ID(relatedId)");
+                return Result.error("文章配图/资讯图片必须传入关联ID(relatedId)");
             }
             if (relatedId <= 0) {
                 return Result.error("关联ID不能小于0");

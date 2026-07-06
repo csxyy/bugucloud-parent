@@ -29,13 +29,19 @@ public interface ArticleService extends IService<Article> {
 
     /**
      * 获取文章核心内容（包含标签、底部栏作者简要信息）
+     * @param articleId 文章ID
+     * @param currentUserId 当前用户ID（可为null）
+     * @return 文章内容
      */
-    ArticleContentVO getArticleContent(Long articleId);
+    ArticleContentVO getArticleContent(Long articleId, Long currentUserId);
 
     /**
      * 获取文章作者详细信息（包含统计数据和其他文章）
+     * @param articleId 文章ID
+     * @param currentUserId 当前用户ID（可为null）
+     * @return 作者详情
      */
-    ArticleAuthorDetailVO getArticleAuthor(Long articleId);
+    ArticleAuthorDetailVO getArticleAuthor(Long articleId, Long currentUserId);
 
     /**
      * 获取当前用户对文章的交互状态（点赞/收藏/关注）
@@ -61,10 +67,24 @@ public interface ArticleService extends IService<Article> {
     List<ArticleManageVO> getArticleManageList(Long userId, String keyword, Integer isPublished);
 
     /**
-     * 新增文章
+     * 新增/更新文章
      * @param req 创建文章请求
      * @param userId 当前登录用户ID
      * @return 文章ID
      */
-    Long createArticle(ArticleCreateReq req, Long userId);
+    Long saveOrUpdateArticle(ArticleCreateReq req, Long userId);
+
+    /**
+     * 查询文章编辑数据
+     * @param articleId 文章ID
+     * @return 文章编辑数据
+     */
+    ArticleEditVO getArticleEditById(Long articleId);
+
+    /**
+     * 删除文章
+     * @param articleId 文章ID
+     * @param userId 当前用户ID
+     */
+    void deleteArticle(Long articleId, Long userId);
 }

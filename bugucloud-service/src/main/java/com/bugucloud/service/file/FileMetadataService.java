@@ -26,6 +26,13 @@ public interface FileMetadataService extends IService<FileMetadata> {
     String uploadFile(FileTypeEnum fileType, Long relatedId, Long uploaderId, MultipartFile file) throws IOException;
 
     /**
+     * 获取当前用户最新上传的未关联文章的封面业务ID（用于创建文章时使用）
+     * @param userId 当前用户ID
+     * @return 业务ID（自动生成的雪花ID），如果没有则返回 null
+     */
+    Long getLatestCoverRelatedId(Long userId);
+
+    /**
      * 删除文件（软删除）
      * @param fileId 文件ID
      * @param userId 当前用户ID

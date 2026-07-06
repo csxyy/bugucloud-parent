@@ -17,10 +17,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum FileTypeEnum {
 
-
-    ARTICLE_IMAGE(1, "文章配图", "articles"),
-    USER_AVATAR(2, "用户头像", "users"),
-    NEWS_IMAGE(3, "资讯图片", "news");
+    ARTICLE_IMAGE(1, "文章配图", "articles", true),
+    USER_AVATAR(2, "用户头像", "users", false),
+    NEWS_IMAGE(3, "资讯图片", "news", true),
+    // 新增封面类型，不需要传relatedId
+    ARTICLE_COVER(4, "文章封面", "articles", false);
 
     /**
      * 数据库存储值
@@ -38,6 +39,11 @@ public enum FileTypeEnum {
      * OSS目录前缀
      */
     private final String prefix;
+
+    /**
+     * 是否需要业务ID（true: 必须传，false: 自动生成）
+     */
+    private final boolean needRelatedId;
 
     /**
      * 根据code获取枚举

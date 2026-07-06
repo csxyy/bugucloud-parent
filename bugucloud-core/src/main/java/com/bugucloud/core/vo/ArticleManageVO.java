@@ -22,6 +22,9 @@ public class ArticleManageVO {
     /** 文章摘要 */
     private String summary;
 
+    /** 文章封面URL */
+    private String cover;
+
     /** 创建时间 */
     private LocalDateTime createTime;
 

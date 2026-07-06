@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -39,7 +40,7 @@ public class SecurityConfig {
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 // 配置路径访问权限
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/**", "news/**").permitAll()
+                        .requestMatchers("/auth/**", "news/**", "file/**").permitAll()
                         .anyRequest().authenticated()                // 其他所有请求需要登录
                 )
                 // 将我们的 JWT 过滤器添加到 UsernamePasswordAuthenticationFilter 之前
@@ -55,6 +56,19 @@ public class SecurityConfig {
                 .build();
     }
 
+    // 完全绕过 Spring Security 过滤器链 Knife4j
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers(
+                "/doc.html",
+                "/webjars/**",
+                "/v2/api-docs/**",
+                "/v3/api-docs/**",
+                "/swagger-resources/**",
+                "/swagger-ui/**",
+                "/favicon.ico"
+        );
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
